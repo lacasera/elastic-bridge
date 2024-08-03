@@ -2,9 +2,9 @@
 
 namespace Lacasera\ElasticBridge;
 
+use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;
 
 class ElasticBridgeServiceProvider extends PackageServiceProvider
 {
