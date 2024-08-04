@@ -3,8 +3,8 @@
 namespace Lacasera\ElasticBridge\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use Lacasera\ElasticBridge\ElasticBridgeServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
