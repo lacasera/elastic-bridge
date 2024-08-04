@@ -6,8 +6,5 @@ use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 
 class QueryBuilder
 {
-    public function __construct(public ConnectionInterface $connection)
-    {
-        // public ConnectionInterface $connection
-    }
+    public function __construct(public ConnectionInterface $connection) {}
 }
