@@ -27,7 +27,6 @@ return [
      */
     'certificate_path' => storage_path(),
 
-
     /**
      * where should bridge files be located
      */
