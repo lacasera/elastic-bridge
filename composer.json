@@ -19,6 +19,7 @@
         "php": "^8.2",
         "elasticsearch/elasticsearch": "^8.14",
         "illuminate/contracts": "^10.0||^11.0",
+        "laravel/prompts": "^0.1.24",
         "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {

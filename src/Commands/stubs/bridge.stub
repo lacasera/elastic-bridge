@@ -1,0 +1,10 @@
+<?php
+
+namespace %s;
+
+use Lacasera\ElasticBridge\ElasticBridge;
+
+class %s extends ElasticBridge
+{
+
+}

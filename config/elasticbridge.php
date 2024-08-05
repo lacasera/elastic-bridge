@@ -26,4 +26,9 @@ return [
      * https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html#_use_the_ca_certificate
      */
     'certificate_path' => storage_path(),
+
+    /**
+     * where should bridge files be located
+     */
+    'namespace' => 'App\\Bridges',
 ];
