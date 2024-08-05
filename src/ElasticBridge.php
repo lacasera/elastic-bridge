@@ -10,6 +10,8 @@ class ElasticBridge
 {
     use ForwardsCalls;
 
+    protected string $index;
+
     public function newBridgeQuery(): BridgeBuilder
     {
         return new BridgeBuilder;
