@@ -8,10 +8,19 @@ use function Laravel\Prompts\text;
 
 class ElasticBridgeCommand extends Command
 {
+    /**
+     * @var string
+     */
     public $signature = 'make:bridge {name? : The elastic index you want to interact with }';
 
+    /**
+     * @var string
+     */
     public $description = 'Create a new bridge  class to represent and elastic index';
 
+    /**
+     * @return int
+     */
     public function handle(): int
     {
         $name = $this->argument('name');
@@ -29,7 +38,7 @@ class ElasticBridgeCommand extends Command
             ->append( DIRECTORY_SEPARATOR . $name. '.php')
             ->value();
 
-        $folder = $this->getFilePathFromNamespace($namespace);
+        $folder = $this->getDirectoryFromNamespace($namespace);
 
         if (file_exists($file)) {
             $this->error("$path already exists");
@@ -50,8 +59,11 @@ class ElasticBridgeCommand extends Command
         return self::SUCCESS;
     }
 
-
-    public function getFilePathFromNamespace(string $namespace): string
+    /**
+     * @param string $namespace
+     * @return string
+     */
+    public function getDirectoryFromNamespace(string $namespace): string
     {
         return app_path() . DIRECTORY_SEPARATOR . str_replace('App' . DIRECTORY_SEPARATOR, '', $namespace);
     }
