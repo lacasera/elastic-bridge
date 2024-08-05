@@ -19,9 +19,6 @@ class ElasticBridgeCommand extends Command
      */
     public $description = 'Create a new bridge  class to represent and elastic index';
 
-    /**
-     * @return int
-     */
     public function handle(): int
     {
         $name = $this->argument('name');
@@ -60,10 +57,6 @@ class ElasticBridgeCommand extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * @param string $namespace
-     * @return string
-     */
     public function getDirectoryFromNamespace(string $namespace): string
     {
         return app_path().DIRECTORY_SEPARATOR.str_replace('App'.DIRECTORY_SEPARATOR, '', $namespace);
