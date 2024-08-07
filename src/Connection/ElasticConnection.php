@@ -4,7 +4,6 @@ namespace Lacasera\ElasticBridge\Connection;
 
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
-use Elastic\Elasticsearch\ClientInterface;
 use Elastic\Elasticsearch\Exception\AuthenticationException;
 
 class ElasticConnection implements ConnectionInterface

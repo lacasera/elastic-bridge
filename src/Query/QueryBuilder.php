@@ -2,25 +2,17 @@
 
 namespace Lacasera\ElasticBridge\Query;
 
-use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 use Lacasera\ElasticBridge\Connection\ElasticConnection;
 
 class QueryBuilder
 {
-    /**
-     * @var array
-     */
     protected array $payload = [
         'should' => [],
         'must' => [],
-        'filter' => []
+        'filter' => [],
     ];
 
-    /**
-     * @param ElasticConnection $connection
-     */
     public function __construct(protected ElasticConnection $connection) {}
-
 
     public function getConnection()
     {
@@ -31,7 +23,7 @@ class QueryBuilder
     {
         $data = data_get($this->payload, $key);
 
-        if (!$data) {
+        if (! $data) {
             $this->payload[$key] = [$payload];
         } else {
             array_push($data, $payload);
@@ -43,8 +35,8 @@ class QueryBuilder
     {
         return [
             'query' => [
-                'bool' => $this->payload
-            ]
+                'bool' => $this->payload,
+            ],
         ];
     }
 }

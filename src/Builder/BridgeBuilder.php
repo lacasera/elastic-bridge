@@ -32,10 +32,9 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-
     public function all()
     {
-        echo "hello there";
+        echo 'hello there';
     }
 
     public function shouldMatch(string $field, $value, bool $boost = true): BridgeBuilder
@@ -45,10 +44,7 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    public function shouldMatchAll(string $field, $value, bool $boost = true)
-    {
-
-    }
+    public function shouldMatchAll(string $field, $value, bool $boost = true) {}
 
     public function mustMatch(string $field, $value): BridgeBuilder
     {
@@ -59,24 +55,18 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     public function matchAll()
     {
-        echo "in the match all";
+        echo 'in the match all';
     }
 
-    public function matchNone()
-    {
+    public function matchNone() {}
 
-    }
-
-    public function filter()
-    {
-
-    }
+    public function filter() {}
 
     public function get()
     {
         $params = [
             'index' => $this->bridge->getIndex(),
-            'body' => $this->query->getPayload()
+            'body' => $this->query->getPayload(),
         ];
 
         return $this->query->getConnection()->getClient()->search($params)->asArray();

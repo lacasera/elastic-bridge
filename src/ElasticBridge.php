@@ -12,6 +12,7 @@ abstract class ElasticBridge
 
     /**
      * The index associated with the bridge
+     *
      * @var string
      */
     protected $index;
@@ -35,12 +36,10 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param $method
-     * @param $parameters
      * @return mixed
      */
     public static function __callStatic($method, $parameters)
     {
-        return (new static())->$method(...$parameters);
+        return (new static)->$method(...$parameters);
     }
 }
