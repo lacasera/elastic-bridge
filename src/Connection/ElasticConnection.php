@@ -28,7 +28,7 @@ class ElasticConnection implements ConnectionInterface
     /**
      * @throws AuthenticationException
      */
-    public function getClient(): ClientInterface
+    public function getClient(): Client
     {
         return $this->connection;
     }

@@ -6,15 +6,19 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
 use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 
-class ElasticBridge
+abstract class ElasticBridge
 {
     use ForwardsCalls;
 
-    protected string $index;
+    /**
+     * The index associated with the bridge
+     * @var string
+     */
+    protected $index;
 
     public function newBridgeQuery(): BridgeBuilder
     {
-        return new BridgeBuilder;
+        return (new BridgeBuilder)->setBridge($this);
     }
 
     public function getIndex(): string
@@ -30,10 +34,13 @@ class ElasticBridge
         return $this->forwardCallTo($this->newBridgeQuery(), $method, $parameters);
     }
 
+    /**
+     * @param $method
+     * @param $parameters
+     * @return mixed
+     */
     public static function __callStatic($method, $parameters)
     {
-        $instance = new self;
-
-        return $instance->forwardCallTo($instance->newBridgeQuery(), $method, $parameters);
+        return (new static())->$method(...$parameters);
     }
 }
