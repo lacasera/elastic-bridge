@@ -15,8 +15,6 @@ trait HasAttributes
     protected $meta = [];
 
     /**
-     * @param array $attributes
-     * @param bool $sync
      * @return $this
      */
     public function setRawAttributes(array $attributes = [], bool $sync = true)
@@ -25,11 +23,11 @@ trait HasAttributes
         $this->attributes = $attributes;
 
         $this->meta = data_get($attributes, 'total');
+
         return $this;
     }
 
     /**
-     * @param $key
      * @return array|mixed
      */
     public function getAttribute($key)
@@ -37,10 +35,7 @@ trait HasAttributes
         return data_get($this->attributes['_source'], $key);
     }
 
-    /**
-     * @return float|null
-     */
-    public function getScore(): float|null
+    public function getScore(): ?float
     {
         return data_get($this->attributes, '_score');
     }

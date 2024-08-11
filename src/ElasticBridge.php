@@ -28,9 +28,6 @@ abstract class ElasticBridge
 
     protected static string $collectionClass = Collection::class;
 
-    /**
-     * @return BridgeBuilder
-     */
     public function newBridgeQuery(): BridgeBuilder
     {
         return (new BridgeBuilder)->setBridge($this);
@@ -58,8 +55,6 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param $attributes
-     * @param $exists
      * @return $this
      */
     public function newInstance($attributes = [], $exists = true)
@@ -77,7 +72,7 @@ abstract class ElasticBridge
     {
         $instance = $this->newInstance();
 
-        return $instance->newCollection(array_map(function ($item) use ($items, $instance) {
+        return $instance->newCollection(array_map(function ($item) use ($instance) {
             return $instance->newFromBuilder($item);
         }, $items));
     }
@@ -116,7 +111,6 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param string $key
      * @return array|mixed
      */
     public function __get(string $key)
@@ -125,7 +119,6 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param string $index
      * @return $this
      */
     public function setIndex(string $index)
@@ -146,9 +139,6 @@ abstract class ElasticBridge
         return $json;
     }
 
-    /**
-     * @return mixed
-     */
     public function jsonSerialize(): mixed
     {
         return $this->toArray();
