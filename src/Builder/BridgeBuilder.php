@@ -6,16 +6,10 @@ use Illuminate\Support\Traits\ForwardsCalls;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
 
-/**
- * @template TModel of ElasticBridge
- */
 class BridgeBuilder implements BridgeBuilderInterface
 {
     use ForwardsCalls;
 
-    /**
-     * @var TModel
-     */
     protected $bridge;
 
     protected QueryBuilder $query;
@@ -32,43 +26,97 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
+    public function getBridge()
+    {
+        return $this->bridge;
+    }
+
     public function all()
     {
-        echo 'hello there';
+
+        return $this->getBridges();
     }
 
+    /**
+     * @param string $field
+     * @param $value
+     * @param bool $boost
+     * @return $this
+     */
     public function shouldMatch(string $field, $value, bool $boost = true): BridgeBuilder
     {
-        $this->query->set('should', ['match' => [$field => $value]]);
+        $this->query->setPayload('should', ['match' => [$field => $value]]);
 
         return $this;
     }
 
-    public function shouldMatchAll(string $field, $value, bool $boost = true) {}
+    /**
+     * @param string $field
+     * @param $value
+     * @param bool $boost
+     * @return $this
+     */
+    public function shouldMatchAll(string $field, $value, bool $boost = true): BridgeBuilder
+    {
+        $this->query->setPayload('should', ['match_all' => [$field => $value]]);
 
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @param $value
+     * @return $this
+     */
     public function mustMatch(string $field, $value): BridgeBuilder
     {
-        $this->query->set('must', ['match' => [$field => $value]]);
+        $this->query->setPayload('must', ['match' => [$field => $value]]);
 
         return $this;
     }
 
-    public function matchAll()
+    /**
+     * @param $boost
+     * @return $this
+     */
+    public function matchAll($boost = 1.0)
     {
-        echo 'in the match all';
+        $this->query->setPayload('must',['match_all' => ['boost' => $boost]]);
+
+        return $this;
     }
 
+    /**
+     * @return void
+     */
     public function matchNone() {}
 
+    /**
+     * @return void
+     */
     public function filter() {}
 
-    public function get()
+    /**
+     * @param $columns
+     * @return mixed
+     */
+    public function get($columns = ['*'])
     {
-        $params = [
-            'index' => $this->bridge->getIndex(),
-            'body' => $this->query->getPayload(),
-        ];
+        $builder = clone $this;
 
-        return $this->query->getConnection()->getClient()->search($params)->asArray();
+        $bridges = $builder->getBridges($columns);
+
+        return $builder->getBridge()->newCollection($bridges);
+    }
+
+    /**
+     * @param $columns
+     * @return mixed
+     */
+    public function getBridges($columns = ['*'])
+    {
+        return $this->bridge->hydrate(
+            $this->query->get($this->getBridge()->getIndex(), $columns)
+        )->all();
     }
 }
