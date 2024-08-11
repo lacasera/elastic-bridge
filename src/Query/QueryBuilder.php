@@ -32,8 +32,6 @@ class QueryBuilder
     }
 
     /**
-     * @param string $index
-     * @param $columns
      * @return mixed
      */
     public function get(string $index, $columns = ['*'])
@@ -42,15 +40,13 @@ class QueryBuilder
     }
 
     /**
-     * @param string $key
-     * @param $payload
      * @return void
      */
-    public function setPayload(string $key,  $payload)
+    public function setPayload(string $key, $payload)
     {
         $data = data_get($this->payload, $key);
 
-        if (!$data) {
+        if (! $data) {
             $this->payload[$key] = [$payload];
         } else {
             array_push($data, $payload);
@@ -71,8 +67,8 @@ class QueryBuilder
     }
 
     /**
-     * @param string $index
      * @return mixed
+     *
      * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException

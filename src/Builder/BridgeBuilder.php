@@ -38,9 +38,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param $value
-     * @param bool $boost
      * @return $this
      */
     public function shouldMatch(string $field, $value, bool $boost = true): BridgeBuilder
@@ -51,9 +48,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param $value
-     * @param bool $boost
      * @return $this
      */
     public function shouldMatchAll(string $field, $value, bool $boost = true): BridgeBuilder
@@ -64,8 +58,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param $value
      * @return $this
      */
     public function mustMatch(string $field, $value): BridgeBuilder
@@ -76,12 +68,11 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param $boost
      * @return $this
      */
     public function matchAll($boost = 1.0)
     {
-        $this->query->setPayload('must',['match_all' => ['boost' => $boost]]);
+        $this->query->setPayload('must', ['match_all' => ['boost' => $boost]]);
 
         return $this;
     }
@@ -97,7 +88,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     public function filter() {}
 
     /**
-     * @param $columns
      * @return mixed
      */
     public function get($columns = ['*'])
@@ -110,7 +100,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param $columns
      * @return mixed
      */
     public function getBridges($columns = ['*'])
