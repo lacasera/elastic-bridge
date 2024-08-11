@@ -78,8 +78,6 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param $attributes
-     * @param $connection
      * @return $this
      */
     public function newFromBuilder($attributes = [], $connection = null)
@@ -92,7 +90,6 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param $columns
      * @return mixed
      */
     public static function all($columns = ['*'])
