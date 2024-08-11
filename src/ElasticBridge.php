@@ -82,15 +82,24 @@ abstract class ElasticBridge
         }, $items));
     }
 
+    /**
+     * @param $attributes
+     * @param $connection
+     * @return $this
+     */
     public function newFromBuilder($attributes = [], $connection = null)
     {
-        $model = $this->newInstance([], true);
+        $bridge = $this->newInstance([], true);
 
-        $model->setRawAttributes($attributes, true);
+        $bridge->setRawAttributes($attributes, true);
 
-        return $model;
+        return $bridge;
     }
 
+    /**
+     * @param $columns
+     * @return mixed
+     */
     public static function all($columns = ['*'])
     {
         return static::query()->get(
@@ -98,6 +107,9 @@ abstract class ElasticBridge
         );
     }
 
+    /**
+     * @return BridgeBuilder
+     */
     public static function query()
     {
         return (new static)->newBridgeQuery();
