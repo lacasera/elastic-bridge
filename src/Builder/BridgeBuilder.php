@@ -3,12 +3,14 @@
 namespace Lacasera\ElasticBridge\Builder;
 
 use Illuminate\Support\Traits\ForwardsCalls;
+use Lacasera\ElasticBridge\Concerns\SetsTerm;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
 
 class BridgeBuilder implements BridgeBuilderInterface
 {
     use ForwardsCalls;
+    use SetsTerm;
 
     protected $bridge;
 
@@ -40,7 +42,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function shouldMatch(string $field, $value, bool $boost = true): BridgeBuilder
+    public function shouldMatch(string $field, $value): BridgeBuilder
     {
         $this->query->setPayload('should', ['match' => [$field => $value]]);
 
@@ -50,9 +52,9 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function shouldMatchAll(string $field, $value, bool $boost = true): BridgeBuilder
+    public function shouldMatchAll($boost = 1.0): BridgeBuilder
     {
-        $this->query->setPayload('should', ['match_all' => [$field => $value]]);
+        $this->query->setPayload('should', ['match_all' => ['boost' => $boost]]);
 
         return $this;
     }
@@ -76,6 +78,14 @@ class BridgeBuilder implements BridgeBuilderInterface
 
         return $this;
     }
+
+    public function raw(array $query)
+    {
+        $this->query->setRawPayload($query);
+
+        return $this;
+    }
+
 
     /**
      * @return void

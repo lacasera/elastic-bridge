@@ -3,6 +3,7 @@
 namespace Lacasera\ElasticBridge\Query;
 
 use Lacasera\ElasticBridge\Connection\ElasticConnection;
+use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
 
 class QueryBuilder
 {
@@ -14,6 +15,11 @@ class QueryBuilder
         'must' => [],
         'filter' => [],
     ];
+
+    /**
+     * @var string|null
+     */
+    protected ?string $term = null;
 
     /**
      * @TODO  : Refactor this to use ConnectionInterface.
@@ -39,6 +45,10 @@ class QueryBuilder
         return $this->makeRequest($index, $columns);
     }
 
+    public function setRawPayload(array $query)
+    {
+        $this->payload = $query;
+    }
     /**
      * @return void
      */
@@ -59,11 +69,24 @@ class QueryBuilder
      */
     public function getPayload(): array
     {
+        if (!$this->term) {
+            throw new MissingTermLevelQueryException("set `term level` query");
+        }
         return [
             'query' => [
-                'bool' => $this->payload,
+                $this->term => $this->payload,
             ],
         ];
+    }
+
+    public function setTerm(string $term)
+    {
+        $this->term = $term;
+    }
+
+    public function getRawPayload()
+    {
+        return ['query' => $this->payload];
     }
 
     /**
@@ -73,8 +96,13 @@ class QueryBuilder
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
-    private function makeRequest(string $index)
+    private function makeRequest(string $index, $columns = ['*'])
     {
+        $params = [
+            'index' => $index,
+            'body' => $this->getPayload(),
+        ];
+
         return $this->getConnection()
             ->getClient()
             ->search([

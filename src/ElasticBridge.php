@@ -10,7 +10,9 @@ use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
 use Lacasera\ElasticBridge\Exceptions\JsonEncodingException;
+use phpDocumentor\Reflection\Types\This;
 
+/** @phpstan-consistent-constructor */
 abstract class ElasticBridge
 {
     use ForwardsCalls;
@@ -35,7 +37,7 @@ abstract class ElasticBridge
 
     public function getIndex(): string
     {
-        return $this->index ?? Str::snake(Str::pluralStudly(class_basename($this)));
+        return $this->index ?: Str::snake(Str::pluralStudly(class_basename($this)));
     }
 
     /**
@@ -55,9 +57,9 @@ abstract class ElasticBridge
     }
 
     /**
-     * @return $this
+     * @return ElasticBridge
      */
-    public function newInstance($attributes = [], $exists = true)
+    public function newInstance($attributes = [], $exists = true): self
     {
         $bridge = new static;
 
@@ -80,9 +82,9 @@ abstract class ElasticBridge
     /**
      * @param $attributes
      * @param $connection
-     * @return $this
+     * @return ElasticBridge
      */
-    public function newFromBuilder($attributes = [], $connection = null)
+    public function newFromBuilder($attributes = [], $connection = null): self
     {
         $bridge = $this->newInstance([], true);
 
