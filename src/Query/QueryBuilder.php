@@ -16,9 +16,6 @@ class QueryBuilder
         'filter' => [],
     ];
 
-    /**
-     * @var string|null
-     */
     protected ?string $term = null;
 
     /**
@@ -49,6 +46,7 @@ class QueryBuilder
     {
         $this->payload = $query;
     }
+
     /**
      * @return void
      */
@@ -69,9 +67,10 @@ class QueryBuilder
      */
     public function getPayload(): array
     {
-        if (!$this->term) {
-            throw new MissingTermLevelQueryException("set `term level` query");
+        if (! $this->term) {
+            throw new MissingTermLevelQueryException('set `term level` query');
         }
+
         return [
             'query' => [
                 $this->term => $this->payload,

@@ -86,7 +86,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-
     /**
      * @return void
      */

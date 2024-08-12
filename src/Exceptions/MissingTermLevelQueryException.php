@@ -4,7 +4,4 @@ namespace Lacasera\ElasticBridge\Exceptions;
 
 use Exception;
 
-class MissingTermLevelQueryException extends Exception
-{
-
-}
+class MissingTermLevelQueryException extends Exception {}

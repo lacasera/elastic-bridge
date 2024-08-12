@@ -28,17 +28,11 @@ abstract class ElasticBridge
 
     protected static string $collectionClass = Collection::class;
 
-    /**
-     * @return BridgeBuilder
-     */
     public function newBridgeQuery(): BridgeBuilder
     {
         return (new BridgeBuilder)->setBridge($this);
     }
 
-    /**
-     * @return string
-     */
     public function getIndex(): string
     {
         return $this->index ?: Str::snake(Str::pluralStudly(class_basename($this)));
@@ -60,9 +54,6 @@ abstract class ElasticBridge
         return (new static)->$method(...$parameters);
     }
 
-    /**
-     * @return ElasticBridge
-     */
     public function newInstance($attributes = [], $exists = true): self
     {
         $bridge = new static;
@@ -83,11 +74,6 @@ abstract class ElasticBridge
         }, $items));
     }
 
-    /**
-     * @param $attributes
-     * @param $connection
-     * @return ElasticBridge
-     */
     public function newFromBuilder($attributes = [], $connection = null): self
     {
         $bridge = $this->newInstance([], true);
@@ -134,8 +120,8 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param $options
      * @return false|string
+     *
      * @throws JsonEncodingException
      */
     public function toJson($options = 0)
