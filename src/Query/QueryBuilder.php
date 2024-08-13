@@ -14,9 +14,6 @@ class QueryBuilder
      */
     protected array $payload = [];
 
-    /**
-     * @var string|null
-     */
     protected ?string $term = null;
 
     /**
@@ -33,9 +30,6 @@ class QueryBuilder
     }
 
     /**
-     * @param string $index
-     * @param $columns
-     * @return mixed
      * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
@@ -45,20 +39,11 @@ class QueryBuilder
         return $this->makeRequest($index, $columns);
     }
 
-    /**
-     * @param array $query
-     * @return void
-     */
     public function setRawPayload(array $query): void
     {
         $this->payload = $query;
     }
 
-    /**
-     * @param string $key
-     * @param mixed $payload
-     * @return void
-     */
     public function setPayload(string $key, mixed $payload): void
     {
         $data = data_get($this->payload, $key);
