@@ -15,9 +15,6 @@ class QueryBuilder
      */
     protected array $payload = [];
 
-    /**
-     * @var string|null
-     */
     protected ?string $term = null;
 
     /**
@@ -73,8 +70,8 @@ class QueryBuilder
      */
     public function getPayload(): array
     {
-        if (!$this->term) {
-            throw new MissingTermLevelQueryException("set `term level` query");
+        if (! $this->term) {
+            throw new MissingTermLevelQueryException('set `term level` query');
         }
 
         if ($this->term === self::RAW_TERM_LEVEL) {
@@ -84,6 +81,7 @@ class QueryBuilder
                 $this->term => $this->payload
             ];
         }
+
         return [
             'query' => $body
         ];

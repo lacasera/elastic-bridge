@@ -12,6 +12,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     use ForwardsCalls;
     use SetsTerm;
 
+
     protected $bridge;
 
     protected QueryBuilder $query;
