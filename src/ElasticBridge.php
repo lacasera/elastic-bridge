@@ -135,17 +135,11 @@ abstract class ElasticBridge
         return $json;
     }
 
-    /**
-     * @return array
-     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
-    /**
-     * @return array
-     */
     public function toArray(): array
     {
         return $this->attributesToArray();
