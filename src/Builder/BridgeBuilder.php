@@ -130,7 +130,7 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function match(string $field, string $query): BridgeBuilder
     {
-        $this->query->setPayload(key: $field, payload: $query, asArray: false);
+        $this->query->setPayload(key: $field, payload: $query);
 
         return $this;
     }
@@ -143,7 +143,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         $this->query->setTerm('ids');
 
-        $this->withValues($ids, is_array($ids));
+        $this->withValues($ids);
 
         return is_array($ids) ? $this->get() : $this->get()->first();
     }
@@ -169,12 +169,11 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     /**
      * @param array $values
-     * @param bool $asArray
      * @return $this
      */
-    public function withValues($values, bool $asArray = false): BridgeBuilder
+    public function withValues($values): BridgeBuilder
     {
-        $this->query->setPayload('values', $values, $asArray);
+        $this->query->setPayload('values', $values);
 
         return $this;
     }

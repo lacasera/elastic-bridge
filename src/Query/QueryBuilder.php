@@ -39,12 +39,12 @@ class QueryBuilder
         $this->payload = $query;
     }
 
-    public function setPayload(string $key, mixed $payload, bool $asArray = true): void
+    public function setPayload(string $key, mixed $payload): void
     {
         $data = data_get($this->payload, $key);
 
         if (! $data) {
-            $this->payload[$key] = $asArray ? [$payload] : $payload;
+            $this->payload[$key] = !is_array($payload) ? [$payload] : $payload;
         } else {
             $data[] = $payload;
             data_set($this->payload, $key, $data);
