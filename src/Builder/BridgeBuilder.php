@@ -31,9 +31,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @return ElasticBridge
-     */
     public function getBridge(): ElasticBridge
     {
         return $this->bridge;
@@ -68,8 +65,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param $value
      * @return $this
      */
     public function mustMatch(string $field, $value): BridgeBuilder
@@ -80,7 +75,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param float $boost
      * @return $this
      */
     public function matchAll(float $boost = 1.0): BridgeBuilder
@@ -91,7 +85,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param array $query
      * @return $this
      */
     public function raw(array $query): BridgeBuilder
@@ -102,7 +95,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
      * @return $this
      */
     public function mustExist(string $field): BridgeBuilder
@@ -113,7 +105,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
      * @return $this
      */
     public function shouldExist(string $field): BridgeBuilder
@@ -124,8 +115,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param string $query
      * @return $this
      */
     public function match(string $field, string $query): BridgeBuilder
@@ -136,7 +125,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param $ids
      * @return mixed
      */
     public function find($ids)
@@ -149,8 +137,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param $field
-     * @param string $query
      * @return $this
      */
     public function multiMatch($field, string $query): BridgeBuilder
