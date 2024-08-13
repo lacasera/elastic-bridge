@@ -7,14 +7,13 @@ use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
 
 class QueryBuilder
 {
+
+    const RAW_TERM_LEVEL = 'raw';
+
     /**
      * @var array|array[]
      */
-    protected array $payload = [
-        'should' => [],
-        'must' => [],
-        'filter' => [],
-    ];
+    protected array $payload = [];
 
     /**
      * @var string|null
@@ -32,7 +31,7 @@ class QueryBuilder
     /**
      * @return ElasticConnection
      */
-    public function getConnection()
+    public function getConnection(): ElasticConnection
     {
         return $this->connection;
     }
@@ -40,51 +39,69 @@ class QueryBuilder
     /**
      * @return mixed
      */
-    public function get(string $index, $columns = ['*'])
+    public function get(string $index, $columns = ['*']): mixed
     {
         return $this->makeRequest($index, $columns);
     }
 
-    public function setRawPayload(array $query)
+    public function setRawPayload(array $query): void
     {
         $this->payload = $query;
     }
+
     /**
+     * @param string $key
+     * @param mixed $payload
+     * @param bool $asArray
      * @return void
      */
-    public function setPayload(string $key, $payload)
+    public function setPayload(string $key, mixed $payload, bool $asArray = true): void
     {
         $data = data_get($this->payload, $key);
 
         if (! $data) {
-            $this->payload[$key] = [$payload];
+            $this->payload[$key] = $asArray ? [$payload] : $payload;
         } else {
-            array_push($data, $payload);
+            $data[] = $payload;
             data_set($this->payload, $key, $data);
         }
     }
 
     /**
      * @return array[]
+     * @throws MissingTermLevelQueryException
      */
     public function getPayload(): array
     {
         if (!$this->term) {
             throw new MissingTermLevelQueryException("set `term level` query");
         }
+
+        if ($this->term === self::RAW_TERM_LEVEL) {
+            $body = $this->payload;
+        } else {
+            $body = [
+                $this->term => $this->payload
+            ];
+        }
         return [
-            'query' => [
-                $this->term => $this->payload,
-            ],
+            'query' => $body
         ];
     }
 
-    public function setTerm(string $term)
+    /**
+     * @param string $term
+     * @return void
+     */
+    public function setTerm(string $term): void
     {
         $this->term = $term;
     }
 
-    public function getRawPayload()
+    /**
+     * @return array[]
+     */
+    public function getRawPayload(): array
     {
         return ['query' => $this->payload];
     }
@@ -96,7 +113,7 @@ class QueryBuilder
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
-    private function makeRequest(string $index, $columns = ['*'])
+    private function makeRequest(string $index, $columns = ['*']): mixed
     {
         $params = [
             'index' => $index,
@@ -105,10 +122,7 @@ class QueryBuilder
 
         return $this->getConnection()
             ->getClient()
-            ->search([
-                'index' => $index,
-                'body' => $this->getPayload(),
-            ])
+            ->search($params)
             ->asArray()['hits']['hits'];
     }
 }
