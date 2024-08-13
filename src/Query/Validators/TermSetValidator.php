@@ -9,7 +9,7 @@ class TermSetValidator implements ValidatorInterface
         $query = data_get($payload, 'body.query.match');
 
         if (! array_key_exists('', $query)) {
-            dd($query);
+            //throw some exception..
         }
     }
 }
