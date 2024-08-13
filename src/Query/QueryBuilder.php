@@ -64,7 +64,7 @@ class QueryBuilder
         $data = data_get($this->payload, $key);
 
         if (! $data) {
-            $this->payload[$key] = !is_array($payload) ? [$payload] : $payload;
+            $this->payload[$key] = ! is_array($payload) ? [$payload] : $payload;
         } else {
             $data[] = $payload;
             data_set($this->payload, $key, $data);

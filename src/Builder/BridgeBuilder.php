@@ -154,7 +154,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param array $values
+     * @param  array  $values
      * @return $this
      */
     public function withValues($values): BridgeBuilder
