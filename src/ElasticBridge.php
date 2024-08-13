@@ -135,7 +135,10 @@ abstract class ElasticBridge
         return $json;
     }
 
-    public function jsonSerialize(): mixed
+    /**
+     * @return array
+     */
+    public function jsonSerialize(): array
     {
         return $this->toArray();
     }
@@ -143,7 +146,7 @@ abstract class ElasticBridge
     /**
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->attributesToArray();
     }
