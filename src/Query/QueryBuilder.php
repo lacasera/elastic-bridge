@@ -7,7 +7,6 @@ use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
 
 class QueryBuilder
 {
-
     const RAW_TERM_LEVEL = 'raw';
 
     /**
@@ -25,17 +24,11 @@ class QueryBuilder
      */
     public function __construct(protected ElasticConnection $connection) {}
 
-    /**
-     * @return ElasticConnection
-     */
     public function getConnection(): ElasticConnection
     {
         return $this->connection;
     }
 
-    /**
-     * @return mixed
-     */
     public function get(string $index, $columns = ['*']): mixed
     {
         return $this->makeRequest($index, $columns);
@@ -46,12 +39,6 @@ class QueryBuilder
         $this->payload = $query;
     }
 
-    /**
-     * @param string $key
-     * @param mixed $payload
-     * @param bool $asArray
-     * @return void
-     */
     public function setPayload(string $key, mixed $payload, bool $asArray = true): void
     {
         $data = data_get($this->payload, $key);
@@ -66,6 +53,7 @@ class QueryBuilder
 
     /**
      * @return array[]
+     *
      * @throws MissingTermLevelQueryException
      */
     public function getPayload(): array
@@ -78,19 +66,15 @@ class QueryBuilder
             $body = $this->payload;
         } else {
             $body = [
-                $this->term => $this->payload
+                $this->term => $this->payload,
             ];
         }
 
         return [
-            'query' => $body
+            'query' => $body,
         ];
     }
 
-    /**
-     * @param string $term
-     * @return void
-     */
     public function setTerm(string $term): void
     {
         $this->term = $term;
@@ -105,8 +89,6 @@ class QueryBuilder
     }
 
     /**
-     * @return mixed
-     *
      * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException

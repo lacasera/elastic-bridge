@@ -6,9 +6,6 @@ use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 
 trait SetsTerm
 {
-    /**
-     * @return BridgeBuilder
-     */
     public function asBoolean(): BridgeBuilder
     {
         $this->query->setTerm('bool');
@@ -16,9 +13,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asFuzzy(): BridgeBuilder
     {
         $this->query->setTerm('fuzzy');
@@ -26,9 +20,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asIds(): BridgeBuilder
     {
         $this->query->setTerm('ids');
@@ -36,9 +27,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asPrefix(): BridgeBuilder
     {
         $this->query->setTerm('prefix');
@@ -46,9 +34,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asRange(): BridgeBuilder
     {
         $this->query->setTerm('range');
@@ -56,9 +41,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asRegex(): BridgeBuilder
     {
         $this->query->setTerm('regex');
@@ -66,9 +48,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asTerm(): BridgeBuilder
     {
         $this->query->setTerm('term');
@@ -76,9 +55,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asTerms(): BridgeBuilder
     {
         $this->query->setTerm('terms');
@@ -86,9 +62,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asTermSet(string $term): BridgeBuilder
     {
         $this->query->setTerm('terms_set');
@@ -96,9 +69,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asWildCard(): BridgeBuilder
     {
         $this->query->setTerm('wildcard');
@@ -106,9 +76,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asMatch(): BridgeBuilder
     {
         $this->query->setTerm('match');
@@ -116,9 +83,6 @@ trait SetsTerm
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function asRaw(): BridgeBuilder
     {
         $this->query->setTerm('raw');

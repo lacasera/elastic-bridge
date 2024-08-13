@@ -8,12 +8,12 @@ class QueryValidator
 {
     public function validate(string $term, array $payload): void
     {
-        $classname =  Str::of($term)
-                ->headline()
-                ->replace(' ', '')
-                ->prepend(__NAMESPACE__ . '\\')
-                ->append('Validator')
-                ->value();
+        $classname = Str::of($term)
+            ->headline()
+            ->replace(' ', '')
+            ->prepend(__NAMESPACE__.'\\')
+            ->append('Validator')
+            ->value();
 
         (new $classname)->handle($payload);
     }

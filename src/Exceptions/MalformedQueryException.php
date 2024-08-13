@@ -4,7 +4,4 @@ namespace Lacasera\ElasticBridge\Exceptions;
 
 use Exception;
 
-class MalformedQueryException extends Exception
-{
-
-}
+class MalformedQueryException extends Exception {}

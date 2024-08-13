@@ -12,7 +12,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     use ForwardsCalls;
     use SetsTerm;
 
-
     protected $bridge;
 
     protected QueryBuilder $query;
@@ -23,7 +22,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param ElasticBridge $bridge
      * @return $this
      */
     public function setBridge(ElasticBridge $bridge): static
@@ -33,9 +31,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @return ElasticBridge
-     */
     public function getBridge(): ElasticBridge
     {
         return $this->bridge;
@@ -69,9 +64,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @return BridgeBuilder
-     */
     public function mustMatch(string $field, $value): BridgeBuilder
     {
         $this->query->setPayload('must', ['match' => [$field => $value]]);
@@ -79,10 +71,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @param float $boost
-     * @return BridgeBuilder
-     */
     public function matchAll(float $boost = 1.0): BridgeBuilder
     {
         $this->query->setPayload('must', ['match_all' => ['boost' => $boost]]);
@@ -90,10 +78,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @param array $query
-     * @return BridgeBuilder
-     */
     public function raw(array $query): BridgeBuilder
     {
         $this->query->setRawPayload($query);
@@ -101,10 +85,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @param string $field
-     * @return BridgeBuilder
-     */
     public function mustExist(string $field): BridgeBuilder
     {
         $this->query->setPayload('must', ['exists' => ['field' => $field]]);
@@ -112,10 +92,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @param string $field
-     * @return BridgeBuilder
-     */
     public function shouldExist(string $field): BridgeBuilder
     {
         $this->query->setPayload(key: 'should', payload: ['exists' => ['field' => $field]]);
@@ -123,11 +99,6 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @param string $field
-     * @param string $query
-     * @return BridgeBuilder
-     */
     public function match(string $field, string $query): BridgeBuilder
     {
         $this->query->setPayload(key: $field, payload: $query, asArray: false);
@@ -135,29 +106,20 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @param $field
-     * @param string $query
-     * @return BridgeBuilder
-     */
     public function multiMatch($field, string $query): BridgeBuilder
     {
-        if (!is_array($field)) {
+        if (! is_array($field)) {
             $field = [$field];
         }
 
         $this->query->setPayload('multi_match', [
             'query' => $query,
-            'fields' => $field
+            'fields' => $field,
         ]);
 
         return $this;
     }
 
-    /**
-     * @param array $values
-     * @return BridgeBuilder
-     */
     public function withValues(array $values = []): BridgeBuilder
     {
         $this->query->setPayload('values', $values, false);
@@ -165,15 +127,13 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-
     /**
      * @return void
      */
     public function filter() {}
 
     /**
-     * @param string[] $columns
-     * @return mixed
+     * @param  string[]  $columns
      */
     public function get(array $columns = ['*']): mixed
     {
@@ -185,8 +145,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string[] $columns
-     * @return mixed
+     * @param  string[]  $columns
      */
     public function getBridges(array $columns = ['*']): mixed
     {

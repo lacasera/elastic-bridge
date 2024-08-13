@@ -13,11 +13,11 @@ class BoolValidator implements ValidatorInterface
     {
         $required = ['should', 'must'];
 
-        $keys = data_get($payload, "body.query.bool");
+        $keys = data_get($payload, 'body.query.bool');
 
-        if(count(array_diff(array_keys($keys),$required ))) {
+        if (count(array_diff(array_keys($keys), $required))) {
             throw new MalformedQueryException(
-                "boolean term level must have a must or should clause. consider using boolean query method"
+                'boolean term level must have a must or should clause. consider using boolean query method'
             );
         }
     }
