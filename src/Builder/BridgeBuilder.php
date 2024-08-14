@@ -179,8 +179,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param int $from
-     * @param int $size
      * @return $this
      */
     public function paginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0)
@@ -191,15 +189,13 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param int $size
-     * @param array $sort
      * @return $this
      */
     public function cursor(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = [])
     {
         $paginate['size'] = $size;
 
-        if (!empty($sort)) {
+        if (! empty($sort)) {
             $paginate['search_after'] = $sort;
         }
 

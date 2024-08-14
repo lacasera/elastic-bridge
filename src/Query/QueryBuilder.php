@@ -9,6 +9,7 @@ use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
 class QueryBuilder
 {
     const RAW_TERM_LEVEL = 'raw';
+
     public const PAGINATION_SIZE = 15;
 
     /**
@@ -16,14 +17,8 @@ class QueryBuilder
      */
     protected array $payload = [];
 
-    /**
-     * @var array
-     */
     protected array $sort = [];
 
-    /**
-     * @var array
-     */
     protected array $filters = [];
 
     protected array $paginate = [];
@@ -143,7 +138,6 @@ class QueryBuilder
     }
 
     /**
-     * @param array $payload
      * @return void
      */
     public function setRawFilters(array $payload)
@@ -160,7 +154,6 @@ class QueryBuilder
     }
 
     /**
-     * @param array $payload
      * @return void
      */
     public function setPagination(array $payload)
@@ -168,10 +161,6 @@ class QueryBuilder
         $this->paginate = $payload;
     }
 
-
-    /**
-     * @return bool
-     */
     private function hasSort(): bool
     {
         return ! empty($this->sort);
@@ -204,6 +193,6 @@ class QueryBuilder
 
     private function isPaginating()
     {
-        return !empty($this->paginate);
+        return ! empty($this->paginate);
     }
 }
