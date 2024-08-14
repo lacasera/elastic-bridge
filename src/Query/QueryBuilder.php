@@ -89,7 +89,7 @@ class QueryBuilder
             $body[$this->term]['filter'] = $this->filters;
         }
 
-        $payload ['query'] = $body;
+        $payload['query'] = $body;
 
         if ($this->hasSort()) {
             $payload['sort'] = $this->sort;
@@ -102,20 +102,12 @@ class QueryBuilder
         return $payload;
     }
 
-    /**
-     * @param string $term
-     * @return void
-     */
     public function setTerm(string $term): void
     {
         $this->term = $term;
     }
 
     /**
-     * @param $type
-     * @param $field
-     * @param $value
-     * @param $operator
      * @return void
      */
     public function setFilter($type, $field, $value, $operator = null)
@@ -131,7 +123,7 @@ class QueryBuilder
          */
         if ($type === 'term') {
             $this->filters[] = [
-                'term' => [$field => $value]
+                'term' => [$field => $value],
             ];
         }
 
@@ -139,9 +131,9 @@ class QueryBuilder
             $this->filters[] = [
                 'range' => [
                     $field => [
-                        $operator => $value
-                    ]
-                ]
+                        $operator => $value,
+                    ],
+                ],
             ];
         }
     }
@@ -159,13 +151,9 @@ class QueryBuilder
         return ['query' => $this->payload];
     }
 
-
-    /**
-     * @return bool
-     */
     private function hasSort(): bool
     {
-        return !empty($this->sort);
+        return ! empty($this->sort);
     }
 
     /**
@@ -188,6 +176,6 @@ class QueryBuilder
 
     private function isSelectingFields(Collection $columns)
     {
-        return $columns->isNotEmpty() && !$columns->contains('*');
+        return $columns->isNotEmpty() && ! $columns->contains('*');
     }
 }

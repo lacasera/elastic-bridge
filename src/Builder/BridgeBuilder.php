@@ -179,21 +179,18 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param string $direction
      * @return $this
      */
     public function orderBy(string $field, string $direction = 'ASC')
     {
         $this->query->setSort([
             $field => [
-                'order' => $direction
-            ]
+                'order' => $direction,
+            ],
         ]);
 
         return $this;
     }
-
 
     /**
      * @param  string[]  $columns
