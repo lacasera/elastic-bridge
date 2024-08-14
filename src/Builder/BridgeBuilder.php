@@ -182,6 +182,38 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param string $field
+     * @param string $direction
+     * @return $this
+     */
+    public function orderBy(string $field, string $direction = 'ASC')
+    {
+        $this->query->setSort([
+            $field => [
+                'order' => $direction
+            ]
+        ]);
+
+        return $this;
+    }
+
+    public function filterByTerm(string $field, $value)
+    {
+        $this->query->setFilter(type: 'term', field: $field, value: $value);
+
+        return $this;
+    }
+
+
+    public function filterByRange(string $field, $value, $operator)
+    {
+        $this->query->setFilter('range', $field, $value, $operator);
+
+        return $this;
+    }
+
+
+    /**
      * @param  string[]  $columns
      */
     public function getBridges(array $columns = ['*']): mixed

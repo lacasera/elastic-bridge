@@ -2,6 +2,7 @@
 
 namespace Lacasera\ElasticBridge\Query;
 
+use Illuminate\Support\Collection;
 use Lacasera\ElasticBridge\Connection\ElasticConnection;
 use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
 
@@ -13,6 +14,10 @@ class QueryBuilder
      * @var array|array[]
      */
     protected array $payload = [];
+
+    protected array $sort = [];
+
+    protected array $filters = [];
 
     protected ?string $term = null;
 
@@ -56,12 +61,17 @@ class QueryBuilder
         }
     }
 
+    public function setSort(array $query)
+    {
+        $this->sort[] = $query;
+    }
+
     /**
      * @return array[]
      *
      * @throws MissingTermLevelQueryException
      */
-    public function getPayload(): array
+    public function getPayload($columns = ['*']): array
     {
         if (! $this->term) {
             throw new MissingTermLevelQueryException('set `term level` query');
@@ -75,14 +85,56 @@ class QueryBuilder
             ];
         }
 
-        return [
-            'query' => $body,
-        ];
+        if ($this->filters) {
+            $body[$this->term]['filter'] = $this->filters;
+        }
+
+        $payload ['query'] = $body;
+
+        if ($this->hasSort()) {
+            $payload['sort'] = $this->sort;
+        }
+
+        if ($this->isSelectingFields(collect($columns))) {
+            $payload['_source'] = $columns;
+        }
+
+        return $payload;
     }
 
+    /**
+     * @param string $term
+     * @return void
+     */
     public function setTerm(string $term): void
     {
         $this->term = $term;
+    }
+
+    /**
+     * @param $type
+     * @param $field
+     * @param $value
+     * @param $operator
+     * @return void
+     */
+    public function setFilter($type, $field, $value, $operator = null)
+    {
+        if ($type === 'term') {
+            $this->filters[] = [
+                'term' => [$field => $value]
+            ];
+        }
+
+        if ($type === 'range') {
+            $this->filters[] = [
+                'range' => [
+                    $field => [
+                        $operator => $value
+                    ]
+                ]
+            ];
+        }
     }
 
     /**
@@ -91,6 +143,15 @@ class QueryBuilder
     public function getRawPayload(): array
     {
         return ['query' => $this->payload];
+    }
+
+
+    /**
+     * @return bool
+     */
+    private function hasSort(): bool
+    {
+        return !empty($this->sort);
     }
 
     /**
@@ -102,12 +163,17 @@ class QueryBuilder
     {
         $params = [
             'index' => $index,
-            'body' => $this->getPayload(),
+            'body' => $this->getPayload($columns),
         ];
 
         return $this->getConnection()
             ->getClient()
             ->search($params)
             ->asArray()['hits']['hits'];
+    }
+
+    private function isSelectingFields(Collection $columns)
+    {
+        return $columns->isNotEmpty() && !$columns->contains('*');
     }
 }
