@@ -179,6 +179,36 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param int $from
+     * @param int $size
+     * @return $this
+     */
+    public function paginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0)
+    {
+        $this->query->setPagination(['from' => $from, 'size' => $size]);
+
+        return $this;
+    }
+
+    /**
+     * @param int $size
+     * @param array $sort
+     * @return $this
+     */
+    public function cursor(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = [])
+    {
+        $paginate['size'] = $size;
+
+        if (!empty($sort)) {
+            $paginate['search_after'] = $sort;
+        }
+
+        $this->query->setPagination($paginate);
+
+        return $this;
+    }
+
+    /**
      * @return $this
      */
     public function orderBy(string $field, string $direction = 'ASC')

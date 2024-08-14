@@ -9,15 +9,24 @@ use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
 class QueryBuilder
 {
     const RAW_TERM_LEVEL = 'raw';
+    public const PAGINATION_SIZE = 15;
 
     /**
      * @var array|array[]
      */
     protected array $payload = [];
 
+    /**
+     * @var array
+     */
     protected array $sort = [];
 
+    /**
+     * @var array
+     */
     protected array $filters = [];
+
+    protected array $paginate = [];
 
     protected ?string $term = null;
 
@@ -95,6 +104,10 @@ class QueryBuilder
             $payload['sort'] = $this->sort;
         }
 
+        if ($this->isPaginating()) {
+            $payload = array_merge($payload, $this->paginate);
+        }
+
         if ($this->isSelectingFields(collect($columns))) {
             $payload['_source'] = $columns;
         }
@@ -112,15 +125,6 @@ class QueryBuilder
      */
     public function setFilter($type, $field, $value, $operator = null)
     {
-        /**
-         * location types [
-         *  geo shape
-         *  geo distance
-         *  geo bounding box
-         *  geo distance range
-         *  geo polygon
-         * ]
-         */
         if ($type === 'term') {
             $this->filters[] = [
                 'term' => [$field => $value],
@@ -138,6 +142,10 @@ class QueryBuilder
         }
     }
 
+    /**
+     * @param array $payload
+     * @return void
+     */
     public function setRawFilters(array $payload)
     {
         $this->filters[] = $payload;
@@ -151,6 +159,19 @@ class QueryBuilder
         return ['query' => $this->payload];
     }
 
+    /**
+     * @param array $payload
+     * @return void
+     */
+    public function setPagination(array $payload)
+    {
+        $this->paginate = $payload;
+    }
+
+
+    /**
+     * @return bool
+     */
     private function hasSort(): bool
     {
         return ! empty($this->sort);
@@ -168,6 +189,8 @@ class QueryBuilder
             'body' => $this->getPayload($columns),
         ];
 
+        dump($params);
+
         return $this->getConnection()
             ->getClient()
             ->search($params)
@@ -177,5 +200,10 @@ class QueryBuilder
     private function isSelectingFields(Collection $columns)
     {
         return $columns->isNotEmpty() && ! $columns->contains('*');
+    }
+
+    private function isPaginating()
+    {
+        return !empty($this->paginate);
     }
 }
