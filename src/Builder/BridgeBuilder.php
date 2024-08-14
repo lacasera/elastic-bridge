@@ -11,8 +11,8 @@ use Lacasera\ElasticBridge\Query\Traits\HasFilters;
 class BridgeBuilder implements BridgeBuilderInterface
 {
     use ForwardsCalls;
-    use SetsTerm;
     use HasFilters;
+    use SetsTerm;
 
     protected $bridge;
 

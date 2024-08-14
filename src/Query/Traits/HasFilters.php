@@ -5,8 +5,6 @@ namespace Lacasera\ElasticBridge\Query\Traits;
 trait HasFilters
 {
     /**
-     * @param string $field
-     * @param $value
      * @return $this
      */
     public function filterByTerm(string $field, $value)
@@ -17,9 +15,6 @@ trait HasFilters
     }
 
     /**
-     * @param string $field
-     * @param $value
-     * @param $operator
      * @return $this
      */
     public function filterByRange(string $field, $value, $operator)
@@ -30,10 +25,6 @@ trait HasFilters
     }
 
     /**
-     * @param string $field
-     * @param array $coordinates
-     * @param string $relation
-     * @param array $options
      * @return $this
      */
     public function filterByGeoShape(string $field, array $coordinates, string $relation = 'envelope', array $options = [])
@@ -43,24 +34,18 @@ trait HasFilters
                 $field => [
                     'shape' => [
                         'type' => 'envelope',
-                        'coordinates' => $coordinates
+                        'coordinates' => $coordinates,
                     ],
                     'relation' => $relation,
-                    ...$options
-                ]
-            ]
+                    ...$options,
+                ],
+            ],
         ]);
 
         return $this;
     }
 
     /**
-     * @param string $field
-     * @param float $distance
-     * @param float $latitude
-     * @param float $longitude
-     * @param string $distanceType
-     * @param array $options
      * @return $this
      */
     public function filterByGeoDistance(string $field, float $distance, float $latitude, float $longitude, string $distanceType = 'arc', array $options = [])
@@ -71,46 +56,36 @@ trait HasFilters
                 'distance_type' => $distanceType,
                 $field => [
                     'lat' => $latitude,
-                    'lon' => $longitude
+                    'lon' => $longitude,
                 ],
                 ...$options,
-            ]
+            ],
         ]);
 
         return $this;
     }
 
     /**
-     * @param string $field
-     * @param array $points
-     * @param array $options
      * @return $this
      */
     public function filterByGeoPolygon(string $field, array $points, array $options = [])
     {
         $this->query->setRawFilters([
-            "geo_polygon" => [
+            'geo_polygon' => [
                 $field => [
-                    'points' => $points
+                    'points' => $points,
                 ],
-                ...$options
-            ]
+                ...$options,
+            ],
         ]);
 
         return $this;
     }
 
     /**
-     * @param string $field
-     * @param float $from
-     * @param float $to
-     * @param float $latitude
-     * @param float $longitude
-     * @param string $unit
-     * @param $options
      * @return void
      */
-    public function filterByGeoDistanceRange(string $field, float $from, float $to,  float $latitude, float $longitude, string $unit = 'km', $options = [])
+    public function filterByGeoDistanceRange(string $field, float $from, float $to, float $latitude, float $longitude, string $unit = 'km', $options = [])
     {
         $this->query->setRawFilters([
             'geo_distance_range' => [
@@ -119,18 +94,14 @@ trait HasFilters
                 'distance_unit' => $unit,
                 $field => [
                     'lat' => $latitude,
-                    'lon' => $longitude
+                    'lon' => $longitude,
                 ],
-                ...$options
-            ]
+                ...$options,
+            ],
         ]);
     }
 
     /**
-     * @param string $field
-     * @param array $topLeft
-     * @param array $bottomRight
-     * @param array $options
      * @return $this
      */
     public function filterByGeoBoundingBox(string $field, array $topLeft, array $bottomRight, array $options = [])
@@ -139,11 +110,12 @@ trait HasFilters
             'geo_bounding_box' => [
                 $field => [
                     'top_left' => $topLeft,
-                    'bottom_right' => $bottomRight
+                    'bottom_right' => $bottomRight,
                 ],
-                ...$options
-            ]
+                ...$options,
+            ],
         ]);
+
         return $this;
     }
 }
