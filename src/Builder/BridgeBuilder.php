@@ -182,16 +182,14 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param string $direction
      * @return $this
      */
     public function orderBy(string $field, string $direction = 'ASC')
     {
         $this->query->setSort([
             $field => [
-                'order' => $direction
-            ]
+                'order' => $direction,
+            ],
         ]);
 
         return $this;
@@ -204,14 +202,12 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-
     public function filterByRange(string $field, $value, $operator)
     {
         $this->query->setFilter('range', $field, $value, $operator);
 
         return $this;
     }
-
 
     /**
      * @param  string[]  $columns
