@@ -6,11 +6,13 @@ use Illuminate\Support\Traits\ForwardsCalls;
 use Lacasera\ElasticBridge\Concerns\SetsTerm;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
+use Lacasera\ElasticBridge\Query\Traits\HasFilters;
 
 class BridgeBuilder implements BridgeBuilderInterface
 {
     use ForwardsCalls;
     use SetsTerm;
+    use HasFilters;
 
     protected $bridge;
 
@@ -165,11 +167,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @return void
-     */
-    public function filter() {}
-
-    /**
      * @param  string[]  $columns
      */
     public function get(array $columns = ['*']): mixed
@@ -193,21 +190,6 @@ class BridgeBuilder implements BridgeBuilderInterface
                 'order' => $direction
             ]
         ]);
-
-        return $this;
-    }
-
-    public function filterByTerm(string $field, $value)
-    {
-        $this->query->setFilter(type: 'term', field: $field, value: $value);
-
-        return $this;
-    }
-
-
-    public function filterByRange(string $field, $value, $operator)
-    {
-        $this->query->setFilter('range', $field, $value, $operator);
 
         return $this;
     }

@@ -120,6 +120,15 @@ class QueryBuilder
      */
     public function setFilter($type, $field, $value, $operator = null)
     {
+        /**
+         * location types [
+         *  geo shape
+         *  geo distance
+         *  geo bounding box
+         *  geo distance range
+         *  geo polygon
+         * ]
+         */
         if ($type === 'term') {
             $this->filters[] = [
                 'term' => [$field => $value]
@@ -135,6 +144,11 @@ class QueryBuilder
                 ]
             ];
         }
+    }
+
+    public function setRawFilters(array $payload)
+    {
+        $this->filters[] = $payload;
     }
 
     /**
