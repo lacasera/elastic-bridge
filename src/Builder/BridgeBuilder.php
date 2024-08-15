@@ -6,15 +6,19 @@ use Illuminate\Support\Traits\ForwardsCalls;
 use Lacasera\ElasticBridge\Concerns\SetsTerm;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
+use Lacasera\ElasticBridge\Query\Traits\HasFilters;
 
 class BridgeBuilder implements BridgeBuilderInterface
 {
     use ForwardsCalls;
+    use HasFilters;
     use SetsTerm;
 
     protected $bridge;
 
     protected QueryBuilder $query;
+
+    private bool $isPaginating = false;
 
     public function __construct()
     {
@@ -165,11 +169,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @return void
-     */
-    public function filter() {}
-
-    /**
      * @param  string[]  $columns
      */
     public function get(array $columns = ['*']): mixed
@@ -182,12 +181,55 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @return $this
+     */
+    public function simplePaginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0)
+    {
+        $this->query->setPagination(['from' => $from, 'size' => $size]);
+        $this->isPaginating = true;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function cursorPaginate(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): BridgeBuilder
+    {
+        $paginate['size'] = $size;
+
+        if (! empty($sort)) {
+            $paginate['search_after'] = $sort;
+        }
+
+        $this->isPaginating = true;
+        $this->query->setPagination($paginate);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function orderBy(string $field, string $direction = 'ASC'): BridgeBuilder
+    {
+        $this->query->setSort([
+            $field => [
+                'order' => $direction,
+            ],
+        ]);
+
+        return $this;
+    }
+
+    /**
      * @param  string[]  $columns
      */
     public function getBridges(array $columns = ['*']): mixed
     {
         return $this->bridge->hydrate(
-            $this->query->get($this->getBridge()->getIndex(), $columns)
+            $this->query->get($this->getBridge()->getIndex(), $columns),
+            $this->isPaginating
         )->all();
     }
 }

@@ -2,13 +2,14 @@
 
 namespace Lacasera\ElasticBridge;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JsonException;
 use Lacasera\ElasticBridge\Builder\BridgeBuilder;
+use Lacasera\ElasticBridge\Concerns\Collection;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
+use Lacasera\ElasticBridge\Concerns\PaginatedCollection;
 use Lacasera\ElasticBridge\Exceptions\JsonEncodingException;
 
 abstract class ElasticBridge
@@ -24,6 +25,9 @@ abstract class ElasticBridge
      */
     protected $index;
 
+    /**
+     * @var bool
+     */
     public $exists = false;
 
     protected static string $collectionClass = Collection::class;
@@ -54,7 +58,7 @@ abstract class ElasticBridge
         return (new static)->$method(...$parameters);
     }
 
-    public function newInstance($attributes = [], $exists = true): self
+    public function newInstance(array $attributes = [], bool $exists = true): ElasticBridge
     {
         $bridge = new static;
 
@@ -65,20 +69,26 @@ abstract class ElasticBridge
         return $bridge;
     }
 
-    public function hydrate(array $items)
+    public function hydrate(array $items, bool $isPaginating = false): mixed
     {
         $instance = $this->newInstance();
 
-        return $instance->newCollection(array_map(function ($item) use ($instance) {
-            return $instance->newFromBuilder($item);
-        }, $items));
+        if ($isPaginating) {
+            static::$collectionClass = PaginatedCollection::class;
+        }
+
+        $meta = $items['total'];
+
+        return $instance->newCollection(array_map(function ($item) use ($instance, $meta) {
+            return $instance->newFromBuilder($item, $meta);
+        }, $items['hits']));
     }
 
-    public function newFromBuilder($attributes = [], $connection = null): self
+    public function newFromBuilder(array $attributes = [], array $meta = [], $connection = null): ElasticBridge
     {
         $bridge = $this->newInstance([], true);
 
-        $bridge->setRawAttributes($attributes, true);
+        $bridge->setRawAttributes($attributes, $meta, true);
 
         return $bridge;
     }

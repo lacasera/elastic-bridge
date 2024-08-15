@@ -17,12 +17,11 @@ trait HasAttributes
     /**
      * @return $this
      */
-    public function setRawAttributes(array $attributes = [], bool $sync = true)
+    public function setRawAttributes(array $attributes = [], array $meta = [], bool $sync = true)
     {
-
         $this->attributes = $attributes;
 
-        $this->meta = data_get($attributes, 'total');
+        $this->meta = $meta;
 
         return $this;
     }
@@ -38,5 +37,10 @@ trait HasAttributes
     public function getScore(): ?float
     {
         return data_get($this->attributes, '_score');
+    }
+
+    public function getMeta(): array
+    {
+        return $this->meta;
     }
 }
