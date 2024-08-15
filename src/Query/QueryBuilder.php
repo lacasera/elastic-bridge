@@ -10,7 +10,6 @@ class QueryBuilder
 {
     const RAW_TERM_LEVEL = 'raw';
 
-
     public const PAGINATION_SIZE = 15;
 
     /**
@@ -18,24 +17,12 @@ class QueryBuilder
      */
     protected array $payload = [];
 
-    /**
-     * @var array
-     */
     protected array $sort = [];
 
-    /**
-     * @var array
-     */
     protected array $filters = [];
 
-    /**
-     * @var array
-     */
     protected array $paginate = [];
 
-    /**
-     * @var string|null
-     */
     protected ?string $term = null;
 
     /**
@@ -46,9 +33,6 @@ class QueryBuilder
      */
     public function __construct(protected ElasticConnection $connection) {}
 
-    /**
-     * @return ElasticConnection
-     */
     public function getConnection(): ElasticConnection
     {
         return $this->connection;
@@ -64,20 +48,11 @@ class QueryBuilder
         return $this->makeRequest($index, $columns);
     }
 
-    /**
-     * @param array $query
-     * @return void
-     */
     public function setRawPayload(array $query): void
     {
         $this->payload = $query;
     }
 
-    /**
-     * @param string $key
-     * @param mixed $payload
-     * @return void
-     */
     public function setPayload(string $key, mixed $payload): void
     {
         $data = data_get($this->payload, $key);
@@ -91,7 +66,6 @@ class QueryBuilder
     }
 
     /**
-     * @param array $query
      * @return void
      */
     public function setSort(array $query)
@@ -139,10 +113,6 @@ class QueryBuilder
         return $payload;
     }
 
-    /**
-     * @param string $term
-     * @return void
-     */
     public function setTerm(string $term): void
     {
         $this->term = $term;
@@ -215,18 +185,11 @@ class QueryBuilder
             ->asArray()['hits'];
     }
 
-    /**
-     * @param Collection $columns
-     * @return bool
-     */
     private function isSelectingFields(Collection $columns): bool
     {
         return $columns->isNotEmpty() && ! $columns->contains('*');
     }
 
-    /**
-     * @return bool
-     */
     private function isPaginating(): bool
     {
         return ! empty($this->paginate);

@@ -93,8 +93,7 @@ trait HasFilters
         float $longitude,
         string $unit = 'km',
         $options = []
-    )
-    {
+    ) {
         $this->query->setRawFilters([
             'geo_distance_range' => [
                 'from' => $from,

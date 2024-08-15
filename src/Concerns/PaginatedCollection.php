@@ -4,7 +4,6 @@ namespace Lacasera\ElasticBridge\Concerns;
 
 class PaginatedCollection extends Collection
 {
-
     /**
      * @return array
      */
@@ -15,7 +14,7 @@ class PaginatedCollection extends Collection
 
             'next' => $this->nextSort(),
 
-            'total' => $this->total()
+            'total' => $this->total(),
         ];
     }
 
