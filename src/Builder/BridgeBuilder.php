@@ -18,6 +18,8 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     protected QueryBuilder $query;
 
+    private bool $isPaginating = false;
+
     public function __construct()
     {
         $this->query = app()->make(QueryBuilder::class);
@@ -181,9 +183,10 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function paginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0)
+    public function simplePaginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0)
     {
         $this->query->setPagination(['from' => $from, 'size' => $size]);
+        $this->isPaginating = true;
 
         return $this;
     }
@@ -191,7 +194,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function cursor(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): BridgeBuilder
+    public function cursorPaginate(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): BridgeBuilder
     {
         $paginate['size'] = $size;
 
@@ -199,6 +202,7 @@ class BridgeBuilder implements BridgeBuilderInterface
             $paginate['search_after'] = $sort;
         }
 
+        $this->isPaginating = true;
         $this->query->setPagination($paginate);
 
         return $this;
@@ -224,7 +228,8 @@ class BridgeBuilder implements BridgeBuilderInterface
     public function getBridges(array $columns = ['*']): mixed
     {
         return $this->bridge->hydrate(
-            $this->query->get($this->getBridge()->getIndex(), $columns)
+            $this->query->get($this->getBridge()->getIndex(), $columns),
+            $this->isPaginating
         )->all();
     }
 }
