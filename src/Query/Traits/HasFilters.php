@@ -85,7 +85,15 @@ trait HasFilters
     /**
      * @return void
      */
-    public function filterByGeoDistanceRange(string $field, float $from, float $to, float $latitude, float $longitude, string $unit = 'km', $options = [])
+    public function filterByGeoDistanceRange(
+        string $field,
+        float $from,
+        float $to,
+        float $latitude,
+        float $longitude,
+        string $unit = 'km',
+        $options = []
+    )
     {
         $this->query->setRawFilters([
             'geo_distance_range' => [

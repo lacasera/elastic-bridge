@@ -191,7 +191,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function cursor(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = [])
+    public function cursor(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): BridgeBuilder
     {
         $paginate['size'] = $size;
 
@@ -207,7 +207,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function orderBy(string $field, string $direction = 'ASC')
+    public function orderBy(string $field, string $direction = 'ASC'): BridgeBuilder
     {
         $this->query->setSort([
             $field => [
