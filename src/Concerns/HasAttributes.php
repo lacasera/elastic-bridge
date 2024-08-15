@@ -34,11 +34,17 @@ trait HasAttributes
         return data_get($this->attributes['_source'], $key);
     }
 
+    /**
+     * @return float|null
+     */
     public function getScore(): ?float
     {
         return data_get($this->attributes, '_score');
     }
 
+    /**
+     * @return array
+     */
     public function getMeta(): array
     {
         return $this->meta;
