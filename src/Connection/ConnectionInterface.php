@@ -2,9 +2,9 @@
 
 namespace Lacasera\ElasticBridge\Connection;
 
-use Elastic\Elasticsearch\ClientInterface;
+use Elastic\Elasticsearch\Client;
 
 interface ConnectionInterface
 {
-    public function getClient(): ClientInterface;
+    public function getClient(): Client;
 }

@@ -6,14 +6,14 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JsonException;
 use Lacasera\ElasticBridge\Builder\BridgeBuilder;
-use Lacasera\ElasticBridge\Concerns\Collection;
+use Lacasera\ElasticBridge\Concerns\FakeBridge;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
-use Lacasera\ElasticBridge\Concerns\PaginatedCollection;
 use Lacasera\ElasticBridge\Exceptions\JsonEncodingException;
 
 abstract class ElasticBridge
 {
+    use FakeBridge;
     use ForwardsCalls;
     use HasAttributes;
     use HasCollection;

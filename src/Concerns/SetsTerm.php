@@ -13,7 +13,7 @@ trait SetsTerm
         return $this;
     }
 
-    public function asFuzzy(): BridgeBuilder
+    public function asFuzzy($options = []): BridgeBuilder
     {
         $this->query->setTerm('fuzzy');
 
@@ -62,7 +62,7 @@ trait SetsTerm
         return $this;
     }
 
-    public function asTermSet(string $term): BridgeBuilder
+    public function asTermSet(): BridgeBuilder
     {
         $this->query->setTerm('terms_set');
 

@@ -31,6 +31,10 @@ trait HasAttributes
      */
     public function getAttribute($key)
     {
+        if ($key == 'id' && ! array_key_exists('id', $this->attributes)) {
+            return data_get($this->attributes, '_id');
+        }
+
         return data_get($this->attributes['_source'], $key);
     }
 

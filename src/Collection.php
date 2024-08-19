@@ -1,6 +1,6 @@
 <?php
 
-namespace Lacasera\ElasticBridge\Concerns;
+namespace Lacasera\ElasticBridge;
 
 use Illuminate\Support\Collection as BaseCollection;
 
