@@ -2,15 +2,18 @@
 
 namespace Lacasera\ElasticBridge;
 
-use Illuminate\Contracts\Support\DeferrableProvider;
 use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 use Lacasera\ElasticBridge\Connection\ElasticConnection;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class ElasticBridgeServiceProvider extends PackageServiceProvider implements DeferrableProvider
+class ElasticBridgeServiceProvider extends PackageServiceProvider
 {
+    /**
+     * @param Package $package
+     * @return void
+     */
     public function configurePackage(Package $package): void
     {
         /*
@@ -22,16 +25,14 @@ class ElasticBridgeServiceProvider extends PackageServiceProvider implements Def
             ->hasCommand(ElasticBridgeCommand::class);
     }
 
-    public function bootingPackage(): void
-    {
-        $this->app->bind(ConnectionInterface::class, ElasticConnection::class);
-    }
-
     /**
-     * @return string[]
+     * @return void
+     * @throws \Spatie\LaravelPackageTools\Exceptions\InvalidPackage
      */
-    public function provides(): array
+    public function register()
     {
-        return [ElasticConnection::class];
+        parent::register();
+
+        $this->app->bind(ConnectionInterface::class, ElasticConnection::class);
     }
 }

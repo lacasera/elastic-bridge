@@ -3,7 +3,7 @@
 namespace Lacasera\ElasticBridge\Query;
 
 use Illuminate\Support\Collection;
-use Lacasera\ElasticBridge\Connection\ElasticConnection;
+use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
 
 class QueryBuilder
@@ -17,23 +17,32 @@ class QueryBuilder
      */
     protected array $payload = [];
 
+    /**
+     * @var array
+     */
     protected array $sort = [];
 
+    /**
+     * @var array
+     */
     protected array $filters = [];
 
+    /**
+     * @var array
+     */
     protected array $paginate = [];
 
+    /**
+     * @var string|null
+     */
     protected ?string $term = null;
 
-    /**
-     * @TODO  : Refactor this to use ConnectionInterface.
-     * currently getting some binding resolution exception.
-     * don't want to waste time debugging.
-     * will fix when main feature are implemented and start testing
-     */
-    public function __construct(protected ElasticConnection $connection) {}
+    public function __construct(public ConnectionInterface $connection) {}
 
-    public function getConnection(): ElasticConnection
+    /**
+     * @return ConnectionInterface
+     */
+    public function getConnection(): ConnectionInterface
     {
         return $this->connection;
     }
@@ -48,11 +57,20 @@ class QueryBuilder
         return $this->makeRequest($index, $columns);
     }
 
+    /**
+     * @param array $query
+     * @return void
+     */
     public function setRawPayload(array $query): void
     {
         $this->payload = $query;
     }
 
+    /**
+     * @param string $key
+     * @param mixed $payload
+     * @return void
+     */
     public function setPayload(string $key, mixed $payload): void
     {
         $data = data_get($this->payload, $key);
@@ -81,7 +99,7 @@ class QueryBuilder
     public function getPayload($columns = ['*']): array
     {
         if (! $this->term) {
-            throw new MissingTermLevelQueryException('set `term level` query');
+            throw new MissingTermLevelQueryException('set term level query');
         }
 
         if ($this->term === self::RAW_TERM_LEVEL) {
@@ -153,7 +171,7 @@ class QueryBuilder
      */
     public function getRawPayload(): array
     {
-        return ['query' => $this->payload];
+        return $this->getPayload();
     }
 
     /**
@@ -164,6 +182,9 @@ class QueryBuilder
         $this->paginate = $payload;
     }
 
+    /**
+     * @return bool
+     */
     private function hasSort(): bool
     {
         return ! empty($this->sort);
@@ -185,11 +206,18 @@ class QueryBuilder
             ->asArray()['hits'];
     }
 
+    /**
+     * @param Collection $columns
+     * @return bool
+     */
     private function isSelectingFields(Collection $columns): bool
     {
         return $columns->isNotEmpty() && ! $columns->contains('*');
     }
 
+    /**
+     * @return bool
+     */
     private function isPaginating(): bool
     {
         return ! empty($this->paginate);

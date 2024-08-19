@@ -2,7 +2,6 @@
 
 namespace Lacasera\ElasticBridge\Tests;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Lacasera\ElasticBridge\ElasticBridgeServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -11,10 +10,6 @@ class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
-
-        Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Lacasera\\ElasticBridge\\Database\\Factories\\'.class_basename($modelName).'Factory'
-        );
     }
 
     protected function getPackageProviders($app)
@@ -26,11 +21,13 @@ class TestCase extends Orchestra
 
     public function getEnvironmentSetUp($app)
     {
-        config()->set('database.default', 'testing');
+        //
+    }
 
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_elastic-bridge_table.php.stub';
-        $migration->up();
-        */
+    protected function getFakeData(): array
+    {
+        $path = dirname(__FILE__, 2) . DIRECTORY_SEPARATOR . 'tests'. DIRECTORY_SEPARATOR . 'fake' . DIRECTORY_SEPARATOR . 'data.json';
+
+        return json_decode(file_get_contents($path), true);
     }
 }

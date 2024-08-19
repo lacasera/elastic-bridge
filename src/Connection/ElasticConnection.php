@@ -8,8 +8,6 @@ use Elastic\Elasticsearch\Exception\AuthenticationException;
 
 class ElasticConnection implements ConnectionInterface
 {
-    protected string $index;
-
     private Client $connection;
 
     /**
