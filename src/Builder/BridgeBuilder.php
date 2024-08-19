@@ -125,7 +125,7 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function match(string $field, string $query): BridgeBuilder
     {
-        $this->query->setPayload(key:'match', payload: [$field => $query]);
+        $this->query->setPayload(key: 'match', payload: [$field => $query]);
 
         return $this;
     }
@@ -160,12 +160,11 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param $values
      * @return $this
      */
     public function withValues($values, $field = null, $options = []): BridgeBuilder
     {
-        if (!$field) {
+        if (! $field) {
             $this->query->setPayload('values', $values);
 
             return $this;
@@ -245,6 +244,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         $query = $this->query->getRawPayload();
 
-        return $asJson ? json_encode($query)  : $query;
+        return $asJson ? json_encode($query) : $query;
     }
 }

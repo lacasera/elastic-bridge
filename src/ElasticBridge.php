@@ -13,10 +13,10 @@ use Lacasera\ElasticBridge\Exceptions\JsonEncodingException;
 
 abstract class ElasticBridge
 {
+    use FakeBridge;
     use ForwardsCalls;
     use HasAttributes;
     use HasCollection;
-    use FakeBridge;
 
     /**
      * The index associated with the bridge
@@ -30,22 +30,13 @@ abstract class ElasticBridge
      */
     public $exists = false;
 
-    /**
-     * @var string
-     */
     protected static string $collectionClass = Collection::class;
 
-    /**
-     * @return BridgeBuilder
-     */
     public function newBridgeQuery(): BridgeBuilder
     {
         return (new BridgeBuilder)->setBridge($this);
     }
 
-    /**
-     * @return string
-     */
     public function getIndex(): string
     {
         return $this->index ?: Str::snake(Str::pluralStudly(class_basename($this)));
@@ -67,11 +58,6 @@ abstract class ElasticBridge
         return (new static)->$method(...$parameters);
     }
 
-    /**
-     * @param array $attributes
-     * @param bool $exists
-     * @return ElasticBridge
-     */
     public function newInstance(array $attributes = [], bool $exists = true): ElasticBridge
     {
         $bridge = new static;
@@ -83,11 +69,6 @@ abstract class ElasticBridge
         return $bridge;
     }
 
-    /**
-     * @param array $items
-     * @param bool $isPaginating
-     * @return mixed
-     */
     public function hydrate(array $items, bool $isPaginating = false): mixed
     {
         $instance = $this->newInstance();
@@ -103,12 +84,6 @@ abstract class ElasticBridge
         }, $items['hits']));
     }
 
-    /**
-     * @param array $attributes
-     * @param array $meta
-     * @param $connection
-     * @return ElasticBridge
-     */
     public function newFromBuilder(array $attributes = [], array $meta = [], $connection = null): ElasticBridge
     {
         $bridge = $this->newInstance([], true);
@@ -170,17 +145,11 @@ abstract class ElasticBridge
         return $json;
     }
 
-    /**
-     * @return array
-     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
-    /**
-     * @return array
-     */
     public function toArray(): array
     {
         return $this->attributesToArray();

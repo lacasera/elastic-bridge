@@ -17,31 +17,16 @@ class QueryBuilder
      */
     protected array $payload = [];
 
-    /**
-     * @var array
-     */
     protected array $sort = [];
 
-    /**
-     * @var array
-     */
     protected array $filters = [];
 
-    /**
-     * @var array
-     */
     protected array $paginate = [];
 
-    /**
-     * @var string|null
-     */
     protected ?string $term = null;
 
     public function __construct(public ConnectionInterface $connection) {}
 
-    /**
-     * @return ConnectionInterface
-     */
     public function getConnection(): ConnectionInterface
     {
         return $this->connection;
@@ -57,20 +42,11 @@ class QueryBuilder
         return $this->makeRequest($index, $columns);
     }
 
-    /**
-     * @param array $query
-     * @return void
-     */
     public function setRawPayload(array $query): void
     {
         $this->payload = $query;
     }
 
-    /**
-     * @param string $key
-     * @param mixed $payload
-     * @return void
-     */
     public function setPayload(string $key, mixed $payload): void
     {
         $data = data_get($this->payload, $key);
@@ -182,9 +158,6 @@ class QueryBuilder
         $this->paginate = $payload;
     }
 
-    /**
-     * @return bool
-     */
     private function hasSort(): bool
     {
         return ! empty($this->sort);
@@ -206,18 +179,11 @@ class QueryBuilder
             ->asArray()['hits'];
     }
 
-    /**
-     * @param Collection $columns
-     * @return bool
-     */
     private function isSelectingFields(Collection $columns): bool
     {
         return $columns->isNotEmpty() && ! $columns->contains('*');
     }
 
-    /**
-     * @return bool
-     */
     private function isPaginating(): bool
     {
         return ! empty($this->paginate);

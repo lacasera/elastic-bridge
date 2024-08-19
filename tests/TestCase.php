@@ -26,7 +26,7 @@ class TestCase extends Orchestra
 
     protected function getFakeData(): array
     {
-        $path = dirname(__FILE__, 2) . DIRECTORY_SEPARATOR . 'tests'. DIRECTORY_SEPARATOR . 'fake' . DIRECTORY_SEPARATOR . 'data.json';
+        $path = dirname(__FILE__, 2).DIRECTORY_SEPARATOR.'tests'.DIRECTORY_SEPARATOR.'fake'.DIRECTORY_SEPARATOR.'data.json';
 
         return json_decode(file_get_contents($path), true);
     }
