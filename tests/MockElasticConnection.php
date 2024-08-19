@@ -3,7 +3,6 @@
 namespace Lacasera\ElasticBridge\Tests;
 
 use Elastic\Elasticsearch\ClientBuilder;
-use Elastic\Elasticsearch\ClientInterface;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Http\Mock\Client;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
@@ -36,7 +35,7 @@ class MockElasticConnection implements ConnectionInterface
     }
 
     #[\Override]
-    public function getClient(): ClientInterface
+    public function getClient(): \Elastic\Elasticsearch\Client
     {
         return $this->connection;
     }
