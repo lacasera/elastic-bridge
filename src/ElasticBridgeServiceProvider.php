@@ -10,10 +10,6 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class ElasticBridgeServiceProvider extends PackageServiceProvider
 {
-    /**
-     * @param Package $package
-     * @return void
-     */
     public function configurePackage(Package $package): void
     {
         /*
@@ -27,6 +23,7 @@ class ElasticBridgeServiceProvider extends PackageServiceProvider
 
     /**
      * @return void
+     *
      * @throws \Spatie\LaravelPackageTools\Exceptions\InvalidPackage
      */
     public function register()

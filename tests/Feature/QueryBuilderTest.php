@@ -17,8 +17,8 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
-     * @test
      *
+     * @test
      */
     public function it_should_throw_a_missing_term_level_query_exception()
     {
@@ -29,6 +29,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_build_match_all_query()
@@ -39,10 +40,10 @@ class QueryBuilderTest extends TestCase
             'query' => [
                 'must' => [
                     'match_all' => [
-                        'boost' => 2.0
-                    ]
-                ]
-            ]
+                        'boost' => 2.0,
+                    ],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $actual);
@@ -50,6 +51,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_build_a_should_match_all_query()
@@ -60,10 +62,10 @@ class QueryBuilderTest extends TestCase
             'query' => [
                 'should' => [
                     'match_all' => [
-                        'boost' => 1.0
-                    ]
-                ]
-            ]
+                        'boost' => 1.0,
+                    ],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $actual);
@@ -71,6 +73,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_build_a_must_match_query()
@@ -82,11 +85,11 @@ class QueryBuilderTest extends TestCase
                 'bool' => [
                     'must' => [
                         'match' => [
-                            'currency' => 'usd'
-                        ]
-                    ]
-                ]
-            ]
+                            'currency' => 'usd',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $actual);
@@ -94,6 +97,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_build_a_raw_query()
@@ -102,10 +106,10 @@ class QueryBuilderTest extends TestCase
             'bool' => [
                 'must' => [
                     'match' => [
-                        'code' => 'xoxo'
-                    ]
-                ]
-            ]
+                        'code' => 'xoxo',
+                    ],
+                ],
+            ],
         ])->toQuery();
 
         $expected = [
@@ -113,11 +117,11 @@ class QueryBuilderTest extends TestCase
                 'bool' => [
                     'must' => [
                         'match' => [
-                            'code' => 'xoxo'
-                        ]
-                    ]
-                ]
-            ]
+                            'code' => 'xoxo',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $actual);
@@ -125,6 +129,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_build_a_must_exist_query()
@@ -135,10 +140,10 @@ class QueryBuilderTest extends TestCase
             'query' => [
                 'must' => [
                     'exists' => [
-                        'field' => 'currency'
-                    ]
-                ]
-            ]
+                        'field' => 'currency',
+                    ],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $actual);
@@ -146,6 +151,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_build_a_should_exist_query()
@@ -156,10 +162,10 @@ class QueryBuilderTest extends TestCase
             'query' => [
                 'should' => [
                     'exists' => [
-                        'field' => 'currency'
-                    ]
-                ]
-            ]
+                        'field' => 'currency',
+                    ],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $actual);
@@ -167,28 +173,30 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_build_a_match_query()
     {
-         $actual = Room::query()
-             ->asRaw()
-             ->match('description', 'foo bar')
-             ->toQuery();
+        $actual = Room::query()
+            ->asRaw()
+            ->match('description', 'foo bar')
+            ->toQuery();
 
-         $expected = [
-             'query' => [
-                 'match' => [
-                     'description' => 'foo bar'
-                 ]
-             ]
-         ];
+        $expected = [
+            'query' => [
+                'match' => [
+                    'description' => 'foo bar',
+                ],
+            ],
+        ];
 
-         $this->assertEquals($expected, $actual);
+        $this->assertEquals($expected, $actual);
     }
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_set_values_for_a_query_with_values()
@@ -198,9 +206,9 @@ class QueryBuilderTest extends TestCase
         $expected = [
             'query' => [
                 'ids' => [
-                    'values' => [1]
-                ]
-            ]
+                    'values' => [1],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $actual);
@@ -208,6 +216,7 @@ class QueryBuilderTest extends TestCase
 
     /**
      * @return void
+     *
      * @test
      */
     public function can_build_a_fuzzy_query()
@@ -228,10 +237,10 @@ class QueryBuilderTest extends TestCase
                         'values' => 'xoxo',
                         'fuzziness' => 0.5,
                         'boost' => 1,
-                        'prefix_length' => 1
-                    ]
-                ]
-            ]
+                        'prefix_length' => 1,
+                    ],
+                ],
+            ],
         ];
 
         $this->assertEquals($expected, $actual);

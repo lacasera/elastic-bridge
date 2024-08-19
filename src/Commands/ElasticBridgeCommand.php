@@ -33,11 +33,12 @@ class ElasticBridgeCommand extends Command
 
         $file = Str::of($folder)
             ->replace('\\', DIRECTORY_SEPARATOR)
-            ->append(DIRECTORY_SEPARATOR. $filename .'.php')
+            ->append(DIRECTORY_SEPARATOR.$filename.'.php')
             ->value();
 
         if (file_exists($file)) {
             $this->info("bridge with the name $filename already exists");
+
             return self::FAILURE;
         }
 
@@ -47,11 +48,11 @@ class ElasticBridgeCommand extends Command
             $filename
         );
 
-        if (!is_dir($folder)) {
+        if (! is_dir($folder)) {
             mkdir($folder, 0777, true);
         }
 
-        file_put_contents($file , $content);
+        file_put_contents($file, $content);
 
         return self::SUCCESS;
     }
@@ -60,7 +61,7 @@ class ElasticBridgeCommand extends Command
     {
         $directoryPath = str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
 
-        return app_path(). DIRECTORY_SEPARATOR . substr($directoryPath, strpos($directoryPath, DIRECTORY_SEPARATOR) + 1);
+        return app_path().DIRECTORY_SEPARATOR.substr($directoryPath, strpos($directoryPath, DIRECTORY_SEPARATOR) + 1);
     }
 
     protected function parseFileName($name)
