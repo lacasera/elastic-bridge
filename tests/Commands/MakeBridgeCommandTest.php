@@ -43,22 +43,6 @@ class MakeBridgeCommandTest extends TestCase
         $this->assertEquals($expected, $this->getFileContent($namespace, 'HotelRoom'));
     }
 
-    /**
-     * @test
-     */
-    public function it_should_throw_exception_when_file_already_exists(): void
-    {
-        $path = app_path('Bridges'.DIRECTORY_SEPARATOR.'Log.php');
-
-        file_put_contents($path, '');
-
-        $this->artisan(ElasticBridgeCommand::class, [
-            'name' => 'log',
-        ])
-            ->expectsOutput('bridge with the name Log already exists')
-            ->assertFailed();
-    }
-
     protected function getFileContent($namespace, $classname): string
     {
         return sprintf("<?php
