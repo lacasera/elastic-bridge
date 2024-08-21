@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Query;
@@ -68,7 +69,6 @@ class QueryBuilder
         $this->sort[] = $query;
     }
 
-
     public function count(string $index)
     {
         $payload = $this->hasPayload() ? $this->getPayload() : $this->defaultPayload();
@@ -80,7 +80,6 @@ class QueryBuilder
                 'body' => $payload,
             ])->asArray()['count'];
     }
-
 
     /**
      * @return array[]
@@ -206,7 +205,7 @@ class QueryBuilder
 
     private function hasPayload()
     {
-        return !empty($this->payload);
+        return ! empty($this->payload);
     }
 
     private function defaultPayload()
@@ -216,11 +215,11 @@ class QueryBuilder
                 'bool' => [
                     'should' => [
                         'match_all' => [
-                            'boost' => 1
-                        ]
-                    ]
-                ]
-            ]
+                            'boost' => 1,
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 }
