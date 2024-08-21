@@ -1,12 +1,12 @@
 <?php
+declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Exceptions;
 
 use Exception;
 use Lacasera\ElasticBridge\ElasticBridge;
 
-/** @phpstan-consistent-constructor */
-class JsonEncodingException extends Exception
+class ErrorEncodingJson extends Exception
 {
     public static function forBridge(ElasticBridge $bridge, $message)
     {

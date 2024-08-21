@@ -1,10 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Query;
 
 use Illuminate\Support\Collection;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
-use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
+use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
 
 class QueryBuilder
 {
@@ -67,15 +68,29 @@ class QueryBuilder
         $this->sort[] = $query;
     }
 
+
+    public function count(string $index)
+    {
+        $payload = $this->hasPayload() ? $this->getPayload() : $this->defaultPayload();
+
+        return $this->getConnection()
+            ->getClient()
+            ->count([
+                'index' => $index,
+                'body' => $payload,
+            ])->asArray()['count'];
+    }
+
+
     /**
      * @return array[]
      *
-     * @throws MissingTermLevelQueryException
+     * @throws MissingTermLevelQuery
      */
     public function getPayload($columns = ['*']): array
     {
         if (! $this->term) {
-            throw new MissingTermLevelQueryException('set term level query');
+            throw new MissingTermLevelQuery('set term level query');
         }
 
         if ($this->term === self::RAW_TERM_LEVEL) {
@@ -187,5 +202,25 @@ class QueryBuilder
     private function isPaginating(): bool
     {
         return ! empty($this->paginate);
+    }
+
+    private function hasPayload()
+    {
+        return !empty($this->payload);
+    }
+
+    private function defaultPayload()
+    {
+        return [
+            'query' => [
+                'bool' => [
+                    'should' => [
+                        'match_all' => [
+                            'boost' => 1
+                        ]
+                    ]
+                ]
+            ]
+        ];
     }
 }

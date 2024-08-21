@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge;
 
@@ -9,7 +10,7 @@ use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\Concerns\FakeBridge;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
-use Lacasera\ElasticBridge\Exceptions\JsonEncodingException;
+use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
 
 abstract class ElasticBridge
 {
@@ -98,9 +99,7 @@ abstract class ElasticBridge
      */
     public static function all($columns = ['*'])
     {
-        return static::query()->get(
-            is_array($columns) ? $columns : func_get_args()
-        );
+        return static::query()->all($columns);
     }
 
     /**
@@ -132,14 +131,14 @@ abstract class ElasticBridge
     /**
      * @return false|string
      *
-     * @throws JsonEncodingException
+     * @throws ErrorEncodingJson
      */
     public function toJson($options = 0)
     {
         try {
             $json = json_encode($this->jsonSerialize(), $options | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw JsonEncodingException::forBridge($this, $e->getMessage());
+            throw ErrorEncodingJson::forBridge($this, $e->getMessage());
         }
 
         return $json;
