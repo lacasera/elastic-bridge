@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Lacasera\ElasticBridge\Tests\Commands;
 
 use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;

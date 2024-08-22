@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Lacasera\ElasticBridge\Tests\Feature;
 
 use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
@@ -14,7 +12,6 @@ class QueryBuilderTest extends TestCase
     {
         parent::setUp();
         Room::fake($this->getFakeData());
-
     }
 
     /**
