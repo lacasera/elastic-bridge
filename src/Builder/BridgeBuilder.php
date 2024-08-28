@@ -40,16 +40,12 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-    /**
-     * @return ElasticBridge
-     */
     public function getBridge(): ElasticBridge
     {
         return $this->bridge;
     }
 
     /**
-     * @param array $columns
      * @return mixed
      */
     public function all(array $columns = ['*'])
@@ -61,8 +57,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param $value
      * @return $this
      */
     public function shouldMatch(string $field, $value): self
@@ -73,7 +67,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param int $size
      * @return $this
      */
     public function take(int $size)
@@ -83,9 +76,7 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
-
     /**
-     * @param int $size
      * @return $this
      */
     public function skip(int $size): self
@@ -106,7 +97,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param int $size
      * @return $this
      */
     public function offset(int $size): self
@@ -127,8 +117,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param $value
      * @return $this
      */
     public function mustMatch(string $field, $value): self
@@ -145,9 +133,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $query
-     * @param string $field
-     * @param string $value
      * @return $this
      */
     public function must(string $query, string $field, string $value): self
@@ -166,7 +151,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param float $boost
      * @return $this
      */
     public function matchAll(float $boost = 1.0): self
@@ -177,7 +161,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param array $query
      * @return $this
      */
     public function raw(array $query): self
@@ -188,7 +171,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
      * @return $this
      */
     public function mustExist(string $field): self
@@ -199,7 +181,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
      * @return $this
      */
     public function shouldExist(string $field): self
@@ -210,9 +191,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param string $query
-     * @param array $options
      * @return $this
      */
     public function match(string $field, string $query, array $options = []): self
@@ -228,8 +206,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param string $query
      * @return $this
      */
     public function orMatch(string $field, string $query): self
@@ -243,7 +219,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param $ids
      * @return mixed
      */
     public function find($ids)
@@ -255,10 +230,7 @@ class BridgeBuilder implements BridgeBuilderInterface
         return is_array($ids) ? $this->get() : $this->get()->first();
     }
 
-
     /**
-     * @param $field
-     * @param string $query
      * @return $this
      */
     public function multiMatch($field, string $query): self
@@ -276,9 +248,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param string $query
-     * @param array $options
      * @return $this
      */
     public function matchPhrase(string $field, string $query, array $options = []): self
@@ -294,9 +263,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param $values
-     * @param string $field
-     * @param array $options
      * @return $this
      */
     public function withValues($values, string $field, array $options = []): self
@@ -324,17 +290,12 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $builder->getBridge()->newCollection($bridges);
     }
 
-    /**
-     * @return int
-     */
     public function count(): int
     {
         return $this->query->count($this->getBridge()->getIndex());
     }
 
     /**
-     * @param int $size
-     * @param int $from
      * @return $this
      */
     public function simplePaginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0): self
@@ -346,8 +307,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param int $size
-     * @param array $sort
      * @return $this
      */
     public function cursorPaginate(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): self
@@ -365,8 +324,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $field
-     * @param string $direction
      * @return $this
      */
     public function orderBy(string $field, string $direction = 'ASC'): self
@@ -381,8 +338,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param array $columns
-     * @return mixed
      * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
@@ -396,7 +351,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param bool $asJson
      * @return array[]|false|string
      */
     public function toQuery(bool $asJson = false): array|false|string
@@ -407,8 +361,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $type
-     * @param string $field
      * @return mixed
      */
     public function getAggregateForASpecificQuery(string $type, string $field)
