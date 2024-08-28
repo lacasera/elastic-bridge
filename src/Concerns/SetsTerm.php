@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lacasera\ElasticBridge\Concerns;
 
 use Lacasera\ElasticBridge\Builder\BridgeBuilder;

@@ -5,58 +5,64 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/lacasera/elastic-bridge/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/lacasera/elastic-bridge/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/lacasera/elastic-bridge.svg?style=flat-square)](https://packagist.org/packages/lacasera/elastic-bridge)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+ElasticBridge allows you to seamlessly "Bridge" the gap between Laravel's Eloquent models and Elasticsearch. 
 
-## Support us
+With ElasticBridge, developers can interact with Elasticsearch indexes as easily as they would with traditional Eloquent models, bringing the power of Elasticsearch into the Laravel ecosystem with minimal effort.
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/elastic-bridge.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/elastic-bridge)
+This package simplifies the complexity of Elasticsearch queries, allowing you to execute powerful search operations while maintaining the elegance and familiarity of Laravel’s syntax.
 
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
+Whether you're building complex search features or managing large datasets, ElasticBridge makes it easy to leverage Elasticsearch’s capabilities directly within your Laravel application.
 
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
-
-## Installation
-
-You can install the package via composer:
-
+## Overview
 ```bash
-composer require lacasera/elastic-bridge
+    php artisan make:bridge HotelRoom
 ```
-
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --tag="elastic-bridge-migrations"
-php artisan migrate
-```
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="elastic-bridge-config"
-```
-
-This is the contents of the published config file:
 
 ```php
-return [
-];
+<?php 
+declare(strict_types=1);
+
+namespace App\Bridges;
+
+use Lacasera\ElasticBridge\ElasticBridge;
+
+class HotelRoom extends ElasticBridge 
+{
+       
+}
 ```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="elastic-bridge-views"
-```
-
-## Usage
 
 ```php
-$elasticBridge = new Lacasera\ElasticBridge();
-echo $elasticBridge->echoPhrase('Hello, Lacasera!');
+<?php
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Bridges\HotelRoom;
+use App\Requests\SearhRequest;
+
+class SearchController extends  Controller
+{
+    public function __invoke(SearhRequest $request)
+    {
+        $rooms = HotelRoom::asBoolean()
+            ->matchAll()
+            ->orderBy('price', 'DESC'),
+            ->filterByTerm('code', 'usd')
+            ->filterByRange('price', 20, 'gte')
+            ->filterByRange('price', 500, 'lte')
+            ->cursorPaginate(50)
+            ->get(['price']);
+            
+            
+        return response()->json([
+            'data' => $rooms
+        ]);
+    }
+}
 ```
 
-## Testing
+[Usage](doc)
 
 ```bash
 composer test

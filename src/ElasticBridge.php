@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lacasera\ElasticBridge;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JsonException;
@@ -9,7 +12,7 @@ use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\Concerns\FakeBridge;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
-use Lacasera\ElasticBridge\Exceptions\JsonEncodingException;
+use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
 
 abstract class ElasticBridge
 {
@@ -77,11 +80,15 @@ abstract class ElasticBridge
             static::$collectionClass = PaginatedCollection::class;
         }
 
-        $meta = $items['total'];
+        $meta = $items['hits']['total'];
+
+        if (isset($items['aggregations'])) {
+            $this->setAggregateMarco($items['aggregations']);
+        }
 
         return $instance->newCollection(array_map(function ($item) use ($instance, $meta) {
             return $instance->newFromBuilder($item, $meta);
-        }, $items['hits']));
+        }, $items['hits']['hits']));
     }
 
     public function newFromBuilder(array $attributes = [], array $meta = [], $connection = null): ElasticBridge
@@ -98,9 +105,7 @@ abstract class ElasticBridge
      */
     public static function all($columns = ['*'])
     {
-        return static::query()->get(
-            is_array($columns) ? $columns : func_get_args()
-        );
+        return static::query()->all($columns);
     }
 
     /**
@@ -132,14 +137,14 @@ abstract class ElasticBridge
     /**
      * @return false|string
      *
-     * @throws JsonEncodingException
+     * @throws ErrorEncodingJson
      */
     public function toJson($options = 0)
     {
         try {
             $json = json_encode($this->jsonSerialize(), $options | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw JsonEncodingException::forBridge($this, $e->getMessage());
+            throw ErrorEncodingJson::forBridge($this, $e->getMessage());
         }
 
         return $json;
@@ -161,5 +166,16 @@ abstract class ElasticBridge
     public function attributesToArray()
     {
         return $this->attributes;
+    }
+
+    private function setAggregateMarco(mixed $aggregations): void
+    {
+        $key = Arr::first(array_keys($aggregations));
+
+        $name = Str::camel($key);
+
+        Collection::macro($name, function () use ($aggregations, $key) {
+            return data_get($aggregations, "$key.value");
+        });
     }
 }

@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lacasera\ElasticBridge\Builder;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
+use Lacasera\ElasticBridge\Concerns\HasAggregates;
 use Lacasera\ElasticBridge\Concerns\SetsTerm;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
@@ -11,6 +15,7 @@ use Lacasera\ElasticBridge\Query\Traits\HasFilters;
 class BridgeBuilder implements BridgeBuilderInterface
 {
     use ForwardsCalls;
+    use HasAggregates;
     use HasFilters;
     use SetsTerm;
 
@@ -43,15 +48,18 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return mixed
      */
-    public function all()
+    public function all(array $columns = ['*'])
     {
-        return $this->getBridges();
+        return $this->asBoolean()
+            ->shouldMatchAll()
+            ->cursorPaginate($this->count())
+            ->get($columns);
     }
 
     /**
      * @return $this
      */
-    public function shouldMatch(string $field, $value): BridgeBuilder
+    public function shouldMatch(string $field, $value): self
     {
         $this->query->setPayload('should', ['match' => [$field => $value]]);
 
@@ -61,7 +69,47 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function shouldMatchAll($boost = 1.0): BridgeBuilder
+    public function take(int $size)
+    {
+        $this->query->setPagination(['size' => $size]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function skip(int $size): self
+    {
+        $this->query->setPagination(['from' => $size]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function limit(int $size): self
+    {
+        $this->query->setPagination(['size' => $size]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function offset(int $size): self
+    {
+        $this->query->setPagination(['from' => $size]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function shouldMatchAll($boost = 1.0): self
     {
         $this->query->setPayload('should', ['match_all' => ['boost' => $boost]]);
 
@@ -71,11 +119,15 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function mustMatch(string $field, $value): BridgeBuilder
+    public function mustMatch(string $field, $value): self
     {
         $this->asBoolean();
 
-        $this->query->setPayload('must', ['match' => [$field => $value]]);
+        $this->query->setPayload('must', ['match' => [
+            $field => [
+                'query' => $value,
+            ],
+        ]]);
 
         return $this;
     }
@@ -83,7 +135,25 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function matchAll(float $boost = 1.0): BridgeBuilder
+    public function must(string $query, string $field, string $value): self
+    {
+        $this->asBoolean();
+
+        $this->query->setPayload('must', [
+            $query => [
+                $field => [
+                    'query' => $value,
+                ],
+            ],
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function matchAll(float $boost = 1.0): self
     {
         $this->query->setPayload('must', ['match_all' => ['boost' => $boost]]);
 
@@ -93,7 +163,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function raw(array $query): BridgeBuilder
+    public function raw(array $query): self
     {
         $this->query->setRawPayload($query);
 
@@ -103,7 +173,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function mustExist(string $field): BridgeBuilder
+    public function mustExist(string $field): self
     {
         $this->query->setPayload('must', ['exists' => ['field' => $field]]);
 
@@ -113,7 +183,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function shouldExist(string $field): BridgeBuilder
+    public function shouldExist(string $field): self
     {
         $this->query->setPayload(key: 'should', payload: ['exists' => ['field' => $field]]);
 
@@ -123,9 +193,27 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function match(string $field, string $query): BridgeBuilder
+    public function match(string $field, string $query, array $options = []): self
     {
-        $this->query->setPayload(key: 'match', payload: [$field => $query]);
+        $this->query->setPayload(key: 'match', payload: [
+            $field => [
+                'query' => $query,
+                ...$options,
+            ],
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function orMatch(string $field, string $query): self
+    {
+        $this->query->setPayload(key: 'match', payload: [$field => [
+            'query' => $query,
+            'operator' => 'or',
+        ]]);
 
         return $this;
     }
@@ -145,7 +233,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function multiMatch($field, string $query): BridgeBuilder
+    public function multiMatch($field, string $query): self
     {
         if (! is_array($field)) {
             $field = [$field];
@@ -162,7 +250,22 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function withValues($values, $field = null, $options = []): BridgeBuilder
+    public function matchPhrase(string $field, string $query, array $options = []): self
+    {
+        $this->query->setPayload('match_phrase', [
+            $field => [
+                'query' => $query,
+                ...$options,
+            ],
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function withValues($values, string $field, array $options = []): self
     {
         if (! $field) {
             $this->query->setPayload('values', $values);
@@ -187,10 +290,15 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $builder->getBridge()->newCollection($bridges);
     }
 
+    public function count(): int
+    {
+        return $this->query->count($this->getBridge()->getIndex());
+    }
+
     /**
      * @return $this
      */
-    public function simplePaginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0)
+    public function simplePaginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0): self
     {
         $this->query->setPagination(['from' => $from, 'size' => $size]);
         $this->isPaginating = true;
@@ -201,7 +309,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function cursorPaginate(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): BridgeBuilder
+    public function cursorPaginate(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): self
     {
         $paginate['size'] = $size;
 
@@ -218,7 +326,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function orderBy(string $field, string $direction = 'ASC'): BridgeBuilder
+    public function orderBy(string $field, string $direction = 'ASC'): self
     {
         $this->query->setSort([
             $field => [
@@ -230,7 +338,9 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param  string[]  $columns
+     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
     public function getBridges(array $columns = ['*']): mixed
     {
@@ -240,10 +350,30 @@ class BridgeBuilder implements BridgeBuilderInterface
         )->all();
     }
 
-    public function toQuery(bool $asJson = false)
+    /**
+     * @return array[]|false|string
+     */
+    public function toQuery(bool $asJson = false): array|false|string
     {
         $query = $this->query->getRawPayload();
 
         return $asJson ? json_encode($query) : $query;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAggregateForASpecificQuery(string $type, string $field)
+    {
+        $this->take(0);
+
+        $this->query
+            ->setAggregate($this->getAggregateQuery($type, $field));
+
+        $results = $this->get();
+
+        $marco = Str::camel("{$type}_$field");
+
+        return $results->$marco();
     }
 }

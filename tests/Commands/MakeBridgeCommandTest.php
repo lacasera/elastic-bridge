@@ -46,6 +46,7 @@ class MakeBridgeCommandTest extends TestCase
     protected function getFileContent($namespace, $classname): string
     {
         return sprintf("<?php
+declare(strict_types=1);
 
 namespace %s;
 

@@ -2,7 +2,7 @@
 
 namespace Lacasera\ElasticBridge\Tests\Feature;
 
-use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQueryException;
+use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
 use Lacasera\ElasticBridge\Tests\Room;
 use Lacasera\ElasticBridge\Tests\TestCase;
 
@@ -12,7 +12,6 @@ class QueryBuilderTest extends TestCase
     {
         parent::setUp();
         Room::fake($this->getFakeData());
-
     }
 
     /**
@@ -22,7 +21,7 @@ class QueryBuilderTest extends TestCase
      */
     public function it_should_throw_a_missing_term_level_query_exception()
     {
-        $this->expectException(MissingTermLevelQueryException::class);
+        $this->expectException(MissingTermLevelQuery::class);
 
         Room::matchAll(2.0)->toQuery();
     }
@@ -85,7 +84,9 @@ class QueryBuilderTest extends TestCase
                 'bool' => [
                     'must' => [
                         'match' => [
-                            'currency' => 'usd',
+                            'currency' => [
+                                'query' => 'usd',
+                            ],
                         ],
                     ],
                 ],
@@ -186,7 +187,9 @@ class QueryBuilderTest extends TestCase
         $expected = [
             'query' => [
                 'match' => [
-                    'description' => 'foo bar',
+                    'description' => [
+                        'query' => 'foo bar',
+                    ],
                 ],
             ],
         ];
