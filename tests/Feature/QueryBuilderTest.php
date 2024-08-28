@@ -84,7 +84,9 @@ class QueryBuilderTest extends TestCase
                 'bool' => [
                     'must' => [
                         'match' => [
-                            'currency' => 'usd',
+                            'currency' => [
+                                'query' => 'usd',
+                            ],
                         ],
                     ],
                 ],
@@ -185,7 +187,9 @@ class QueryBuilderTest extends TestCase
         $expected = [
             'query' => [
                 'match' => [
-                    'description' => 'foo bar',
+                    'description' => [
+                        'query' => 'foo bar',
+                    ],
                 ],
             ],
         ];

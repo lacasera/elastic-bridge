@@ -25,7 +25,11 @@ class QueryBuilder
 
     protected array $paginate = [];
 
+    protected array $aggregates = [];
+
     protected ?string $term = null;
+
+    protected string $type = 'query';
 
     public function __construct(public ConnectionInterface $connection) {}
 
@@ -41,7 +45,7 @@ class QueryBuilder
      */
     public function get(string $index, $columns = ['*']): mixed
     {
-        return $this->makeRequest($index, $columns);
+        return $this->makeSearchRequest($index, $columns);
     }
 
     public function setRawPayload(array $query): void
@@ -49,7 +53,7 @@ class QueryBuilder
         $this->payload = $query;
     }
 
-    public function setPayload(string $key, mixed $payload): void
+    public function setPayload(string $key, mixed $payload)
     {
         $data = data_get($this->payload, $key);
 
@@ -59,6 +63,8 @@ class QueryBuilder
             $data[] = $payload;
             data_set($this->payload, $key, $data);
         }
+
+        return $this;
     }
 
     /**
@@ -82,6 +88,8 @@ class QueryBuilder
     }
 
     /**
+     * TODO refactor this method..
+     *
      * @return array[]
      *
      * @throws MissingTermLevelQuery
@@ -104,10 +112,14 @@ class QueryBuilder
             $body[$this->term]['filter'] = $this->filters;
         }
 
-        $payload['query'] = $body;
+        $payload[$this->type] = $body;
 
         if ($this->hasSort()) {
             $payload['sort'] = $this->sort;
+        }
+
+        if ($this->shouldAttachAggregate()) {
+            $payload['aggs'] = $this->aggregates;
         }
 
         if ($this->isPaginating()) {
@@ -121,9 +133,18 @@ class QueryBuilder
         return $payload;
     }
 
-    public function setTerm(string $term): void
+    public function setTerm(string $term)
     {
         $this->term = $term;
+
+        return $this;
+    }
+
+    public function setAggregate(array $payload)
+    {
+        $this->aggregates = $payload;
+
+        return $this;
     }
 
     /**
@@ -172,6 +193,13 @@ class QueryBuilder
         $this->paginate = $payload;
     }
 
+    public function setType(string $type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
     private function hasSort(): bool
     {
         return ! empty($this->sort);
@@ -182,15 +210,24 @@ class QueryBuilder
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
-    private function makeRequest(string $index, $columns = ['*']): mixed
+    protected function makeSearchRequest(string $index, $columns = ['*']): mixed
+    {
+        return $this->makeRequest($index, $columns);
+    }
+
+    public function makeAggregateRequest(string $type, string $index)
+    {
+        return $this->setType('aggs')->makeRequest($index)['aggregations'][$type]['value'];
+    }
+
+    protected function makeRequest(string $index, $columns = ['*']): array
     {
         return $this->getConnection()
             ->getClient()
             ->search([
                 'index' => $index,
                 'body' => $this->getPayload($columns),
-            ])
-            ->asArray()['hits'];
+            ])->asArray();
     }
 
     private function isSelectingFields(Collection $columns): bool
@@ -203,7 +240,7 @@ class QueryBuilder
         return ! empty($this->paginate);
     }
 
-    private function hasPayload()
+    public function hasPayload()
     {
         return ! empty($this->payload);
     }
@@ -222,4 +259,11 @@ class QueryBuilder
             ],
         ];
     }
+
+    private function shouldAttachAggregate()
+    {
+        return ! empty($this->aggregates);
+    }
+
+    public function attachAggregateQuery(string $string, string $field) {}
 }

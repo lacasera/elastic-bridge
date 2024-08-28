@@ -37,7 +37,13 @@ trait HasAttributes
             return data_get($this->attributes, '_id');
         }
 
-        return data_get($this->attributes['_source'], $key);
+        $value = data_get($this->attributes['_source'], $key);
+
+        if (is_array($value)) {
+            return json_decode(json_encode($value), false);
+        }
+
+        return $value;
     }
 
     public function getScore(): ?float
