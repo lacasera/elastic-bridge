@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Concerns;
 
+use Lacasera\ElasticBridge\DTO\Stats;
+
 trait HasAggregates
 {
-    public function avg(string $field)
+    /**
+     * @param string $field
+     * @return float
+     */
+    public function avg(string $field): float
     {
         if ($this->query->hasPayload()) {
             return $this->getAggregateForASpecificQuery('avg', $field);
@@ -15,7 +21,11 @@ trait HasAggregates
         return $this->primitiveAggregate('avg', $field);
     }
 
-    public function max(string $field)
+    /**
+     * @param string $field
+     * @return float
+     */
+    public function max(string $field): float
     {
         if ($this->query->hasPayload()) {
             return $this->getAggregateForASpecificQuery('max', $field);
@@ -24,7 +34,11 @@ trait HasAggregates
         return $this->primitiveAggregate('max', $field);
     }
 
-    public function min(string $field)
+    /**
+     * @param string $field
+     * @return float
+     */
+    public function min(string $field): float
     {
         if ($this->query->hasPayload()) {
             return $this->getAggregateForASpecificQuery('min', $field);
@@ -34,9 +48,10 @@ trait HasAggregates
     }
 
     /**
-     * @return mixed
+     * @param mixed $field
+     * @return float
      */
-    public function sum($field)
+    public function sum($field): float
     {
         if ($this->query->hasPayload()) {
             return $this->getAggregateForASpecificQuery('sum', $field);
@@ -45,7 +60,12 @@ trait HasAggregates
         return $this->primitiveAggregate('sum', $field);
     }
 
-    public function withAggregate($type, $field)
+    /**
+     * @param mixed $type
+     * @param mixed $field
+     * @return self;
+     */
+    public function withAggregate($type, $field): self
     {
         $this->query->setAggregate($this->getAggregateQuery($type, $field));
 
@@ -69,6 +89,24 @@ trait HasAggregates
             ->makeAggregateRequest($key, $this->getBridge()->getIndex());
     }
 
+    /**
+     * @param string $field
+     * @return Stats
+     */
+    public function stats(string $field) : Stats
+    {
+        if ($this->query->hasPayload()) {
+            return $this->getAggregateForASpecificQuery('stats', $field);
+        }
+
+        return new Stats($this->primitiveAggregate('stats', $field));
+    }
+
+    /**
+     * @param string $type
+     * @param string $field
+     * @return array[]
+     */
     private function getAggregateQuery(string $type, string $field)
     {
         $key = "{$type}_{$field}";

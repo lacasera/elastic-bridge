@@ -147,6 +147,24 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @param string $query
      * @param string $field
+     * @param array $payload
+     * @return $this
+     */
+    public function mustNot(string $query, string $field ,array $payload): self
+    {
+        $this->query->setPayload('must_not', [
+            $query => [
+                $field => $payload
+            ]
+        ]);
+
+        return $this;
+    }
+
+
+    /**
+     * @param string $query
+     * @param string $field
      * @param string $value
      * @return $this
      */
@@ -250,7 +268,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         $this->query->setTerm('ids');
 
-        $this->withValues($ids);
+        $this->withValues($ids, );
 
         return is_array($ids) ? $this->get() : $this->get()->first();
     }
@@ -299,7 +317,7 @@ class BridgeBuilder implements BridgeBuilderInterface
      * @param array $options
      * @return $this
      */
-    public function withValues($values, string $field, array $options = []): self
+    public function withValues($values, string $field = null, array $options = []): self
     {
         if (! $field) {
             $this->query->setPayload('values', $values);

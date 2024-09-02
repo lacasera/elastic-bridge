@@ -130,6 +130,7 @@ class QueryBuilder
             $payload['_source'] = $columns;
         }
 
+       // dd($payload);
         return $payload;
     }
 
@@ -217,10 +218,16 @@ class QueryBuilder
 
     public function makeAggregateRequest(string $type, string $index)
     {
-        return $this->setType('aggs')->makeRequest($index)['aggregations'][$type]['value'];
+        $results =  $this->setType('aggs')->makeRequest($index)['aggregations'][$type];//['value'];
+
+        if (!str_contains($type, 'stats')) {
+            return $results['value'];
+        }
+
+        return $results;
     }
 
-    protected function makeRequest(string $index, $columns = ['*']): array
+    public function makeRequest(string $index, $columns = ['*']): array
     {
         return $this->getConnection()
             ->getClient()
