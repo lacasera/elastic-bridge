@@ -142,17 +142,8 @@ class QueryBuilder
         }
 
         if ($this->range) {
-            $this->payload['query'] = [
-                "range" => [
-                    "price" => [
-                        "gte" => 30,
-                        "lte" => 300,
-                    ]
-                ]
-            ];
+            $this->payload['query'] = $this->range;
         }
-       // dd($this->range);
-        dump($this->payload);
         /**
          * @TODO: implement logging for queries.
          * call $this->getRawPayload()
