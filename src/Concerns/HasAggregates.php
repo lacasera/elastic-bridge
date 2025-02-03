@@ -9,10 +9,6 @@ use Lacasera\ElasticBridge\DTO\Stats;
 
 trait HasAggregates
 {
-    /**
-     * @param string $field
-     * @return float
-     */
     public function avg(string $field): float
     {
         if ($this->query->hasPayload()) {
@@ -22,10 +18,6 @@ trait HasAggregates
         return $this->primitiveAggregate('avg', $field);
     }
 
-    /**
-     * @param string $field
-     * @return float
-     */
     public function max(string $field): float
     {
         if ($this->query->hasPayload()) {
@@ -35,10 +27,6 @@ trait HasAggregates
         return $this->primitiveAggregate('max', $field);
     }
 
-    /**
-     * @param string $field
-     * @return float
-     */
     public function min(string $field): float
     {
         if ($this->query->hasPayload()) {
@@ -49,8 +37,7 @@ trait HasAggregates
     }
 
     /**
-     * @param mixed $field
-     * @return float
+     * @param  mixed  $field
      */
     public function sum($field): float
     {
@@ -62,9 +49,6 @@ trait HasAggregates
     }
 
     /**
-     * @param string $type
-     * @param string $field
-     * @param array $options
      * @return self;
      */
     public function withAggregate(string $type, string $field, array $options = []): self
@@ -86,17 +70,13 @@ trait HasAggregates
             ->setPayload($key, [
                 $type => [
                     'field' => $field,
-                    ...$options
+                    ...$options,
                 ],
             ])
             ->makeAggregateRequest($key, $this->getBridge()->getIndex());
     }
 
-    /**
-     * @param string $field
-     * @return Stats
-     */
-    public function stats(string $field) : Stats
+    public function stats(string $field): Stats
     {
         if ($this->query->hasPayload()) {
             return $this->getAggregateForASpecificQuery('stats', $field);
@@ -106,8 +86,6 @@ trait HasAggregates
     }
 
     /**
-     * @param string $field
-     * @param float $interval
      * @return \Illuminate\Support\Collection<Bucket::class>
      */
     public function histogram(string $field, float $interval)
@@ -120,14 +98,12 @@ trait HasAggregates
             return $this->getAggregateForASpecificQuery('histogram', $field, $options);
         }
 
-        $buckets =  data_get($this->primitiveAggregate('histogram',$field, $options), 'buckets');
+        $buckets = data_get($this->primitiveAggregate('histogram', $field, $options), 'buckets');
 
         return collect($buckets)->mapInto(Bucket::class)->collect();
     }
 
     /**
-     * @param string $type
-     * @param string $field
      * @return array[]
      */
     private function getAggregateQuery(string $type, string $field, $options = [])
