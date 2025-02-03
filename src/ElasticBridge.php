@@ -12,6 +12,8 @@ use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\Concerns\FakeBridge;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
+use Lacasera\ElasticBridge\DTO\Bucket;
+use Lacasera\ElasticBridge\DTO\Stats;
 use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
 
 abstract class ElasticBridge
@@ -33,13 +35,22 @@ abstract class ElasticBridge
      */
     public $exists = false;
 
+    /**
+     * @var string
+     */
     protected static string $collectionClass = Collection::class;
 
+    /**
+     * @return BridgeBuilder
+     */
     public function newBridgeQuery(): BridgeBuilder
     {
         return (new BridgeBuilder)->setBridge($this);
     }
 
+    /**
+     * @return string
+     */
     public function getIndex(): string
     {
         return $this->index ?: Str::snake(Str::pluralStudly(class_basename($this)));
@@ -61,6 +72,11 @@ abstract class ElasticBridge
         return (new static)->$method(...$parameters);
     }
 
+    /**
+     * @param array $attributes
+     * @param bool $exists
+     * @return $this
+     */
     public function newInstance(array $attributes = [], bool $exists = true): ElasticBridge
     {
         $bridge = new static;
@@ -72,6 +88,11 @@ abstract class ElasticBridge
         return $bridge;
     }
 
+    /**
+     * @param array $items
+     * @param bool $isPaginating
+     * @return mixed
+     */
     public function hydrate(array $items, bool $isPaginating = false): mixed
     {
         $instance = $this->newInstance();
@@ -91,6 +112,12 @@ abstract class ElasticBridge
         }, $items['hits']['hits']));
     }
 
+    /**
+     * @param array $attributes
+     * @param array $meta
+     * @param $connection
+     * @return $this
+     */
     public function newFromBuilder(array $attributes = [], array $meta = [], $connection = null): ElasticBridge
     {
         $bridge = $this->newInstance([], true);
@@ -168,14 +195,48 @@ abstract class ElasticBridge
         return $this->attributes;
     }
 
-    private function setAggregateMarco(mixed $aggregations): void
+    /**
+     * @param array $aggregations
+     * @return void
+     */
+    protected function setAggregateMarco(array $aggregations): void
     {
         $key = Arr::first(array_keys($aggregations));
-
         $name = Str::camel($key);
 
-        Collection::macro($name, function () use ($aggregations, $key) {
-            return data_get($aggregations, "$key.value");
-        });
+        $results = $this->resolveAggregationResults($aggregations, $key);
+
+        Collection::macro($name, fn() => $results);
+    }
+
+    /**
+     * @param array $aggregations
+     * @param $key
+     * @return array|\Illuminate\Support\Collection|Stats|mixed|void
+     */
+    protected function resolveAggregationResults(array $aggregations, $key)
+    {
+        if (str_contains($key, 'stats')) {
+           return new Stats(data_get($aggregations, $key));
+        }
+
+        if ($this->isBucketAggregate($key)) {
+            return collect(data_get($aggregations, "$key.buckets"))->mapInto(Bucket::class)->collect();
+        }
+
+        if (Arr::has($aggregations, $key)) {
+            return (data_get($aggregations, $key));
+        }
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    protected function isBucketAggregate($key): bool
+    {
+        $key = Arr::first(explode('_', $key));
+
+        return in_array($key, ['histogram', 'range']);
     }
 }
