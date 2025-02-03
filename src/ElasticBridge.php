@@ -35,22 +35,13 @@ abstract class ElasticBridge
      */
     public $exists = false;
 
-    /**
-     * @var string
-     */
     protected static string $collectionClass = Collection::class;
 
-    /**
-     * @return BridgeBuilder
-     */
     public function newBridgeQuery(): BridgeBuilder
     {
         return (new BridgeBuilder)->setBridge($this);
     }
 
-    /**
-     * @return string
-     */
     public function getIndex(): string
     {
         return $this->index ?: Str::snake(Str::pluralStudly(class_basename($this)));
@@ -73,8 +64,6 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param array $attributes
-     * @param bool $exists
      * @return $this
      */
     public function newInstance(array $attributes = [], bool $exists = true): ElasticBridge
@@ -88,11 +77,6 @@ abstract class ElasticBridge
         return $bridge;
     }
 
-    /**
-     * @param array $items
-     * @param bool $isPaginating
-     * @return mixed
-     */
     public function hydrate(array $items, bool $isPaginating = false): mixed
     {
         $instance = $this->newInstance();
@@ -113,9 +97,6 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param array $attributes
-     * @param array $meta
-     * @param $connection
      * @return $this
      */
     public function newFromBuilder(array $attributes = [], array $meta = [], $connection = null): ElasticBridge
@@ -195,10 +176,6 @@ abstract class ElasticBridge
         return $this->attributes;
     }
 
-    /**
-     * @param array $aggregations
-     * @return void
-     */
     protected function setAggregateMarco(array $aggregations): void
     {
         $key = Arr::first(array_keys($aggregations));
@@ -206,18 +183,16 @@ abstract class ElasticBridge
 
         $results = $this->resolveAggregationResults($aggregations, $key);
 
-        Collection::macro($name, fn() => $results);
+        Collection::macro($name, fn () => $results);
     }
 
     /**
-     * @param array $aggregations
-     * @param $key
      * @return array|\Illuminate\Support\Collection|Stats|mixed|void
      */
     protected function resolveAggregationResults(array $aggregations, $key)
     {
         if (str_contains($key, 'stats')) {
-           return new Stats(data_get($aggregations, $key));
+            return new Stats(data_get($aggregations, $key));
         }
 
         if ($this->isBucketAggregate($key)) {
@@ -225,14 +200,10 @@ abstract class ElasticBridge
         }
 
         if (Arr::has($aggregations, $key)) {
-            return (data_get($aggregations, $key));
+            return data_get($aggregations, $key);
         }
     }
 
-    /**
-     * @param $key
-     * @return bool
-     */
     protected function isBucketAggregate($key): bool
     {
         $key = Arr::first(explode('_', $key));

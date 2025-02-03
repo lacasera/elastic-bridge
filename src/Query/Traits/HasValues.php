@@ -8,6 +8,6 @@ trait HasValues
 {
     public static function values()
     {
-        return array_map(fn($enum) => $enum->value, self::cases());
+        return array_map(fn ($enum) => $enum->value, self::cases());
     }
 }

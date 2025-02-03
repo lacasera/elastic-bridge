@@ -79,8 +79,8 @@ class QueryBuilder
     }
 
     /**
-     * @param string $index
      * @return mixed
+     *
      * @throws MissingTermLevelQuery
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
@@ -144,6 +144,7 @@ class QueryBuilder
         if ($this->range) {
             $this->payload['query'] = $this->range;
         }
+
         /**
          * @TODO: implement logging for queries.
          * call $this->getRawPayload()
@@ -237,11 +238,11 @@ class QueryBuilder
     {
         $complexAggregates = ['stats', 'histogram', 'range'];
 
-        $results =  $this->setType('aggs')->makeRequest($index)['aggregations'][$type];
+        $results = $this->setType('aggs')->makeRequest($index)['aggregations'][$type];
 
         $type = Arr::first(explode('_', $type));
 
-        if (!in_array($type, $complexAggregates)) {
+        if (! in_array($type, $complexAggregates)) {
             return $results['value'];
         }
 
@@ -275,26 +276,26 @@ class QueryBuilder
 
     public function range(string $field, string $operator, $value)
     {
-        $existing = data_get($this->hasPayload() ? $this->filters : $this->range, 'range.'. $field);
+        $existing = data_get($this->hasPayload() ? $this->filters : $this->range, 'range.'.$field);
 
-       if($existing) {
+        if ($existing) {
 
-           $payload = array_merge($existing["$field"], [$operator => $value , ] );
-       } else {
-           $payload =  [
+            $payload = array_merge($existing["$field"], [$operator => $value]);
+        } else {
+            $payload = [
                 "$field" => [
                     $operator => $value,
-                ]
-           ];
-       }
+                ],
+            ];
+        }
 
-       if ($this->hasPayload()) {
+        if ($this->hasPayload()) {
             data_set($this->filters, 'range', $payload);
-       } else {
+        } else {
             data_set($this->range, 'range.'.$field, $payload);
-       }
+        }
 
-       return $this;
+        return $this;
     }
 
     private function defaultPayload(): array

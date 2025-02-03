@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Enums;
 
-use Lacasera\ElasticBridge\Query\Traits\ValidateOperator;
 use Lacasera\ElasticBridge\Query\Traits\HasValues;
+use Lacasera\ElasticBridge\Query\Traits\ValidateOperator;
 
 enum RangeOperator: string
 {
@@ -19,5 +19,5 @@ enum RangeOperator: string
 
     case FROM = 'from';
 
-    case  TO = 'to';
+    case TO = 'to';
 }

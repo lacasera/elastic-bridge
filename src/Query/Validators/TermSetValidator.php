@@ -11,7 +11,7 @@ class TermSetValidator implements ValidatorInterface
         $query = data_get($payload, 'body.query.match');
 
         if (! array_key_exists('', $query)) {
-            //throw some exception..
+            // throw some exception..
         }
     }
 }

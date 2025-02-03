@@ -133,27 +133,20 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $query
-     * @param string $field
-     * @param array $payload
      * @return $this
      */
-    public function mustNot(string $query, string $field ,array $payload): self
+    public function mustNot(string $query, string $field, array $payload): self
     {
         $this->query->setPayload('must_not', [
             $query => [
-                $field => $payload
-            ]
+                $field => $payload,
+            ],
         ]);
 
         return $this;
     }
 
-
     /**
-     * @param string $query
-     * @param string $field
-     * @param string $value
      * @return $this
      */
     public function must(string $query, string $field, string $value): self
@@ -286,7 +279,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function withValues($values, string $field = null, array $options = []): self
+    public function withValues($values, ?string $field = null, array $options = []): self
     {
         if (! $field) {
             $this->query->setPayload('values', $values);
