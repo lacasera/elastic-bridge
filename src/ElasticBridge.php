@@ -35,13 +35,22 @@ abstract class ElasticBridge
      */
     public $exists = false;
 
+    /**
+     * @var string
+     */
     protected static string $collectionClass = Collection::class;
 
+    /**
+     * @return BridgeBuilder
+     */
     public function newBridgeQuery(): BridgeBuilder
     {
         return (new BridgeBuilder)->setBridge($this);
     }
 
+    /**
+     * @return string
+     */
     public function getIndex(): string
     {
         return $this->index ?: Str::snake(Str::pluralStudly(class_basename($this)));
@@ -77,6 +86,11 @@ abstract class ElasticBridge
         return $bridge;
     }
 
+    /**
+     * @param array $items
+     * @param bool $isPaginating
+     * @return mixed
+     */
     public function hydrate(array $items, bool $isPaginating = false): mixed
     {
         $instance = $this->newInstance();
@@ -133,6 +147,16 @@ abstract class ElasticBridge
     }
 
     /**
+     * @param string $name
+     * @param mixed $value
+     * @return void
+     */
+    public function __set(string $name, mixed $value): void
+    {
+        data_set($this->attributes, "_source.$name", $value );
+    }
+
+    /**
      * @return $this
      */
     public function setIndex(string $index)
@@ -158,11 +182,17 @@ abstract class ElasticBridge
         return $json;
     }
 
+    /**
+     * @return array
+     */
     public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
+    /**
+     * @return array
+     */
     public function toArray(): array
     {
         return $this->attributesToArray();
@@ -176,6 +206,10 @@ abstract class ElasticBridge
         return $this->attributes;
     }
 
+    /**
+     * @param array $aggregations
+     * @return void
+     */
     protected function setAggregateMarco(array $aggregations): void
     {
         $key = Arr::first(array_keys($aggregations));
@@ -204,6 +238,10 @@ abstract class ElasticBridge
         }
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     protected function isBucketAggregate($key): bool
     {
         $key = Arr::first(explode('_', $key));
