@@ -121,10 +121,6 @@ foreach ($rooms as $room) {
     echo $room->price;
 }
 
-/**
-*
- */
-
 // access the aggregate value with the method below
 echo $room->priceMin();
 
@@ -192,7 +188,30 @@ $stats->toCollection();
 <a name="histogram-and-ranges"></a>
 
 ```php
+// ranges aggregate query
+$rooms = HotelRoom::asBoolean()
+    ->shouldMatch('advertiser', 'booking.com')
+    ->withAggregate('range', 'price', [
+        'ranges' => [
+            'from' => 50,
+            'to' => 500
+        ]
+    ])
+    ->get();
 
+dump($room->priceRange())
+
+
+// histogram aggregate query
+$rooms = HotelRoom::asBoolean()
+    ->shouldMatch('advertiser', 'booking.com')
+    ->withAggregate('histogram', 'price', [
+        "interval" => 300
+    ])
+    ->get();
+
+
+dump($rooms->priceHistogram());
 ```
 
 ## # Ordering, Limit and Offset
