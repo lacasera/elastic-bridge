@@ -376,27 +376,24 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     /**
      * increases the value of a field by the counter provided
-     * @param string $field
-     * @param int $counter
-     * @return bool
      */
     public function increment(string $field, int $counter = 1): bool
     {
         return $this->query->update($this->bridge->getIndex(), [
             'script' => [
-                "source" => "ctx._source.$field += params.count",
+                'source' => "ctx._source.$field += params.count",
                 'params' => [
-                    'count' => $counter
-                ]
-            ]
+                    'count' => $counter,
+                ],
+            ],
         ], $this->bridge->id);
     }
 
     /**
      * decreases the value of a field by the counter provided
-     * @param string $field
-     * @param int $counter
+     *
      * @return bool
+     *
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
@@ -405,17 +402,14 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         return $this->query->update($this->bridge->getIndex(), [
             'script' => [
-                "source" => "ctx._source.$field -= params.count",
+                'source' => "ctx._source.$field -= params.count",
                 'params' => [
-                    'count' => $counter
-                ]
-            ]
+                    'count' => $counter,
+                ],
+            ],
         ], $this->bridge->id);
     }
 
-    /**
-     * @return bool
-     */
     public function save(): bool
     {
         return $this->query->save($this->bridge);
