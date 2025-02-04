@@ -12,6 +12,8 @@ use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\Concerns\FakeBridge;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
+use Lacasera\ElasticBridge\DTO\Bucket;
+use Lacasera\ElasticBridge\DTO\Stats;
 use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
 
 abstract class ElasticBridge
@@ -61,6 +63,9 @@ abstract class ElasticBridge
         return (new static)->$method(...$parameters);
     }
 
+    /**
+     * @return $this
+     */
     public function newInstance(array $attributes = [], bool $exists = true): ElasticBridge
     {
         $bridge = new static;
@@ -91,6 +96,9 @@ abstract class ElasticBridge
         }, $items['hits']['hits']));
     }
 
+    /**
+     * @return $this
+     */
     public function newFromBuilder(array $attributes = [], array $meta = [], $connection = null): ElasticBridge
     {
         $bridge = $this->newInstance([], true);
@@ -168,14 +176,38 @@ abstract class ElasticBridge
         return $this->attributes;
     }
 
-    private function setAggregateMarco(mixed $aggregations): void
+    protected function setAggregateMarco(array $aggregations): void
     {
         $key = Arr::first(array_keys($aggregations));
-
         $name = Str::camel($key);
 
-        Collection::macro($name, function () use ($aggregations, $key) {
-            return data_get($aggregations, "$key.value");
-        });
+        $results = $this->resolveAggregationResults($aggregations, $key);
+
+        Collection::macro($name, fn () => $results);
+    }
+
+    /**
+     * @return array|\Illuminate\Support\Collection|Stats|mixed|void
+     */
+    protected function resolveAggregationResults(array $aggregations, $key)
+    {
+        if (str_contains($key, 'stats')) {
+            return new Stats(data_get($aggregations, $key));
+        }
+
+        if ($this->isBucketAggregate($key)) {
+            return collect(data_get($aggregations, "$key.buckets"))->mapInto(Bucket::class)->collect();
+        }
+
+        if (Arr::has($aggregations, $key)) {
+            return data_get($aggregations, $key);
+        }
+    }
+
+    protected function isBucketAggregate($key): bool
+    {
+        $key = Arr::first(explode('_', $key));
+
+        return in_array($key, ['histogram', 'range']);
     }
 }

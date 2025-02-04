@@ -135,6 +135,20 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
+    public function mustNot(string $query, string $field, array $payload): self
+    {
+        $this->query->setPayload('must_not', [
+            $query => [
+                $field => $payload,
+            ],
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
     public function must(string $query, string $field, string $value): self
     {
         $this->asBoolean();
@@ -265,7 +279,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function withValues($values, string $field, array $options = []): self
+    public function withValues($values, ?string $field = null, array $options = []): self
     {
         if (! $field) {
             $this->query->setPayload('values', $values);
@@ -363,12 +377,11 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return mixed
      */
-    public function getAggregateForASpecificQuery(string $type, string $field)
+    public function getAggregateForASpecificQuery(string $type, string $field, $options = [])
     {
         $this->take(0);
 
-        $this->query
-            ->setAggregate($this->getAggregateQuery($type, $field));
+        $this->query->setAggregate($this->getAggregateQuery($type, $field, $options));
 
         $results = $this->get();
 

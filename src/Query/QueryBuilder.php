@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Query;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
@@ -26,6 +27,8 @@ class QueryBuilder
     protected array $paginate = [];
 
     protected array $aggregates = [];
+
+    protected array $range = [];
 
     protected ?string $term = null;
 
@@ -75,6 +78,13 @@ class QueryBuilder
         $this->sort[] = $query;
     }
 
+    /**
+     * @return mixed
+     *
+     * @throws MissingTermLevelQuery
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
     public function count(string $index)
     {
         $payload = $this->hasPayload() ? $this->getPayload() : $this->defaultPayload();
@@ -84,7 +94,8 @@ class QueryBuilder
             ->count([
                 'index' => $index,
                 'body' => $payload,
-            ])->asArray()['count'];
+            ])
+            ->asArray()['count'];
     }
 
     /**
@@ -130,6 +141,14 @@ class QueryBuilder
             $payload['_source'] = $columns;
         }
 
+        if ($this->range) {
+            $this->payload['query'] = $this->range;
+        }
+
+        /**
+         * @TODO: implement logging for queries.
+         * call $this->getRawPayload()
+         */
         return $payload;
     }
 
@@ -140,7 +159,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function setAggregate(array $payload)
+    public function setAggregate(array $payload): self
     {
         $this->aggregates = $payload;
 
@@ -150,7 +169,7 @@ class QueryBuilder
     /**
      * @return void
      */
-    public function setFilter($type, $field, $value, $operator = null)
+    protected function setFilter($type, $field, $value, $operator = null)
     {
         if ($type === 'term') {
             $this->filters[] = [
@@ -217,10 +236,20 @@ class QueryBuilder
 
     public function makeAggregateRequest(string $type, string $index)
     {
-        return $this->setType('aggs')->makeRequest($index)['aggregations'][$type]['value'];
+        $complexAggregates = ['stats', 'histogram', 'range'];
+
+        $results = $this->setType('aggs')->makeRequest($index)['aggregations'][$type];
+
+        $type = Arr::first(explode('_', $type));
+
+        if (! in_array($type, $complexAggregates)) {
+            return $results['value'];
+        }
+
+        return $results;
     }
 
-    protected function makeRequest(string $index, $columns = ['*']): array
+    public function makeRequest(string $index, $columns = ['*']): array
     {
         return $this->getConnection()
             ->getClient()
@@ -240,12 +269,36 @@ class QueryBuilder
         return ! empty($this->paginate);
     }
 
-    public function hasPayload()
+    public function hasPayload(): bool
     {
         return ! empty($this->payload);
     }
 
-    private function defaultPayload()
+    public function range(string $field, string $operator, $value)
+    {
+        $existing = data_get($this->hasPayload() ? $this->filters : $this->range, 'range.'.$field);
+
+        if ($existing) {
+
+            $payload = array_merge($existing["$field"], [$operator => $value]);
+        } else {
+            $payload = [
+                "$field" => [
+                    $operator => $value,
+                ],
+            ];
+        }
+
+        if ($this->hasPayload()) {
+            data_set($this->filters, 'range', $payload);
+        } else {
+            data_set($this->range, 'range.'.$field, $payload);
+        }
+
+        return $this;
+    }
+
+    private function defaultPayload(): array
     {
         return [
             'query' => [
@@ -260,10 +313,8 @@ class QueryBuilder
         ];
     }
 
-    private function shouldAttachAggregate()
+    private function shouldAttachAggregate(): bool
     {
         return ! empty($this->aggregates);
     }
-
-    public function attachAggregateQuery(string $string, string $field) {}
 }
