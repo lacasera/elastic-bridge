@@ -379,14 +379,7 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function increment(string $field, int $counter = 1): bool
     {
-        return $this->query->update($this->bridge->getIndex(), [
-            'script' => [
-                'source' => "ctx._source.$field += params.count",
-                'params' => [
-                    'count' => $counter,
-                ],
-            ],
-        ], $this->bridge->id);
+        return $this->scriptRequest("ctx._source.$field += params.count", ['count' => $counter]);
     }
 
     /**
@@ -400,19 +393,30 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function decrement(string $field, int $counter = 1)
     {
-        return $this->query->update($this->bridge->getIndex(), [
-            'script' => [
-                'source' => "ctx._source.$field -= params.count",
-                'params' => [
-                    'count' => $counter,
-                ],
-            ],
-        ], $this->bridge->id);
+        return $this->scriptRequest("ctx._source.$field -= params.count", ['count' => $counter]);
     }
 
     public function save(): bool
     {
         return $this->query->save($this->bridge);
+    }
+
+    /**
+     * @return bool
+     *
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
+    public function scriptRequest(string $source, array $params)
+    {
+
+        return $this->query->update($this->bridge->getIndex(), [
+            'script' => [
+                'source' => $source,
+                'params' => $params,
+            ],
+        ], $this->bridge->id);
     }
 
     /**
