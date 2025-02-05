@@ -9,10 +9,10 @@
 -   [# Stats](#stats)
 -   [# Histogram and Range](#histogram-and-range)
 
+
 [# Ordering, Limit and Offset](#ordering-sorting-limit-and-offset)
 
 -   [# Ordering](#ordering)
-
 -   [# Limit and Offset](#limit-and-offset)
 -   [# Sorting](#sorting)
 
