@@ -19,6 +19,7 @@ nav:
   - installation.md
   - generating-bridges.md
   - retrieving-bridges.md
+  - updates-and-inserts.md
   - syntax.md
   - pagination.md
   - testing.md

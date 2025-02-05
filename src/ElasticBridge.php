@@ -132,6 +132,11 @@ abstract class ElasticBridge
         return $this->getAttribute($key);
     }
 
+    public function __set(string $name, mixed $value): void
+    {
+        data_set($this->attributes, "_source.$name", $value);
+    }
+
     /**
      * @return $this
      */

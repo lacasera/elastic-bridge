@@ -7,6 +7,7 @@ namespace Lacasera\ElasticBridge\Query;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
+use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
 
 class QueryBuilder
@@ -56,6 +57,9 @@ class QueryBuilder
         $this->payload = $query;
     }
 
+    /**
+     * @return $this
+     */
     public function setPayload(string $key, mixed $payload)
     {
         $data = data_get($this->payload, $key);
@@ -152,6 +156,9 @@ class QueryBuilder
         return $payload;
     }
 
+    /**
+     * @return $this
+     */
     public function setTerm(string $term)
     {
         $this->term = $term;
@@ -159,6 +166,9 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function setAggregate(array $payload): self
     {
         $this->aggregates = $payload;
@@ -212,6 +222,9 @@ class QueryBuilder
         $this->paginate = $payload;
     }
 
+    /**
+     * @return $this
+     */
     public function setType(string $type)
     {
         $this->type = $type;
@@ -234,6 +247,13 @@ class QueryBuilder
         return $this->makeRequest($index, $columns);
     }
 
+    /**
+     * @return mixed
+     *
+     * @throws MissingTermLevelQuery
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
     public function makeAggregateRequest(string $type, string $index)
     {
         $complexAggregates = ['stats', 'histogram', 'range'];
@@ -249,6 +269,11 @@ class QueryBuilder
         return $results;
     }
 
+    /**
+     * @throws MissingTermLevelQuery
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
     public function makeRequest(string $index, $columns = ['*']): array
     {
         return $this->getConnection()
@@ -259,14 +284,22 @@ class QueryBuilder
             ])->asArray();
     }
 
-    private function isSelectingFields(Collection $columns): bool
+    /**
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
+    public function save(ElasticBridge $bridge): bool
     {
-        return $columns->isNotEmpty() && ! $columns->contains('*');
-    }
+        $id = $bridge->id;
 
-    private function isPaginating(): bool
-    {
-        return ! empty($this->paginate);
+        if ($id) {
+            return $this->update($bridge->getIndex(), [
+                'doc' => data_get($bridge->attributesToArray(), '_source'),
+            ], $id);
+        }
+
+        // creating
     }
 
     public function hasPayload(): bool
@@ -274,6 +307,9 @@ class QueryBuilder
         return ! empty($this->payload);
     }
 
+    /**
+     * @return $this
+     */
     public function range(string $field, string $operator, $value)
     {
         $existing = data_get($this->hasPayload() ? $this->filters : $this->range, 'range.'.$field);
@@ -298,6 +334,49 @@ class QueryBuilder
         return $this;
     }
 
+    /**
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
+    public function update(string $index, array $body, $id): bool
+    {
+        $query = [
+            'index' => $index,
+            'id' => $id,
+            'body' => $body,
+        ];
+
+        return $this->getConnection()->getClient()->update($query)->asBool();
+    }
+
+    /**
+     * @return array
+     *
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
+    protected function request(array $body)
+    {
+        return $this->getConnection()
+            ->getClient()
+            ->search($body)
+            ->asArray();
+    }
+
+    private function isSelectingFields(Collection $columns): bool
+    {
+        return $columns->isNotEmpty() && ! $columns->contains('*');
+    }
+
+    private function isPaginating(): bool
+    {
+        return ! empty($this->paginate);
+    }
+
+    /**
+     * @return array[]
+     */
     private function defaultPayload(): array
     {
         return [
