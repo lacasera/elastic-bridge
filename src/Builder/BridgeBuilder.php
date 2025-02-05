@@ -402,9 +402,8 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param string $source
-     * @param array $params
      * @return bool
+     *
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
@@ -412,11 +411,11 @@ class BridgeBuilder implements BridgeBuilderInterface
     public function scriptRequest(string $source, array $params)
     {
 
-        return $this->query->update($this->bridge->getIndex(),  [
+        return $this->query->update($this->bridge->getIndex(), [
             'script' => [
                 'source' => $source,
-                'params' => $params
-            ]
+                'params' => $params,
+            ],
         ], $this->bridge->id);
     }
 
