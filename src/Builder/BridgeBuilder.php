@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Builder;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
 use Lacasera\ElasticBridge\Concerns\HasAggregates;
@@ -19,7 +20,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     use HasFilters;
     use SetsTerm;
 
-    protected $bridge;
+    protected ElasticBridge $bridge;
 
     protected QueryBuilder $query;
 
@@ -375,6 +376,31 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param array $attributes
+     * @return mixed|null
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
+    public function create(array $attributes)
+    {
+        $payload = [
+            'index' => $this->bridge->getIndex(),
+        ];
+
+        if (Arr::has($attributes, 'id')) {
+            $payload['id'] = data_get($attributes, 'id');
+            data_forget($attributes, 'id');
+        }
+
+        $payload['body'] = $attributes;
+
+        $res = $this->query->getConnection()->getClient()->index($payload)->asArray();
+
+        return data_get($res, '_id');
+    }
+
+    /**
      * increases the value of a field by the counter provided
      */
     public function increment(string $field, int $counter = 1): bool
@@ -384,20 +410,34 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     /**
      * decreases the value of a field by the counter provided
-     *
      * @return bool
-     *
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
-    public function decrement(string $field, int $counter = 1)
+    public function decrement(string $field, int $counter = 1): bool
     {
         return $this->scriptRequest("ctx._source.$field -= params.count", ['count' => $counter]);
     }
 
+    /**
+     * @return bool
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     */
     public function save(): bool
     {
+        $id = $this->bridge->id;
+
+        $res = $this->find($id);
+
+        if(!$res) {
+            $id = $this->create($this->bridge->attributesToArray()['_source']);
+
+            return boolval($id);
+        }
+
         return $this->query->save($this->bridge);
     }
 
@@ -410,7 +450,6 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function scriptRequest(string $source, array $params)
     {
-
         return $this->query->update($this->bridge->getIndex(), [
             'script' => [
                 'source' => $source,
