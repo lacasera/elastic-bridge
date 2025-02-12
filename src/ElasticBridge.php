@@ -60,7 +60,9 @@ abstract class ElasticBridge
      */
     public static function __callStatic($method, $parameters)
     {
-        return (new static)->$method(...$parameters);
+        $static = (new static); // ->$method(...$parameters);
+
+        return $static->forwardCallTo($static->newBridgeQuery(), $method, $parameters); // $this->forwardCallTo($this->newBridgeQuery(), $method, $parameters);
     }
 
     /**
@@ -140,7 +142,7 @@ abstract class ElasticBridge
     /**
      * @return $this
      */
-    public function setIndex(string $index)
+    public function setIndex(string $index): ElasticBridge
     {
         $this->index = $index;
 

@@ -291,15 +291,9 @@ class QueryBuilder
      */
     public function save(ElasticBridge $bridge): bool
     {
-        $id = $bridge->id;
-
-        if ($id) {
-            return $this->update($bridge->getIndex(), [
-                'doc' => data_get($bridge->attributesToArray(), '_source'),
-            ], $id);
-        }
-
-        // creating
+        return $this->update($bridge->getIndex(), [
+            'doc' => data_get($bridge->attributesToArray(), '_source'),
+        ], $bridge->id);
     }
 
     public function hasPayload(): bool
@@ -356,12 +350,21 @@ class QueryBuilder
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
-    protected function request(array $body)
+    protected function searchRequest(array $body)
     {
         return $this->getConnection()
             ->getClient()
             ->search($body)
             ->asArray();
+    }
+
+    public function indexRequest(array $body, bool $asArray = true)
+    {
+        $result = $this->getConnection()
+            ->getClient()
+            ->index($body);
+
+        return $asArray ? $result->asArray() : $result->asBool();
     }
 
     private function isSelectingFields(Collection $columns): bool
