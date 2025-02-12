@@ -42,9 +42,6 @@ abstract class ElasticBridge
         return (new BridgeBuilder)->setBridge($this);
     }
 
-    /**
-     * @return string
-     */
     public function getIndex(): string
     {
         return $this->index ?: Str::snake(Str::pluralStudly(class_basename($this)));
@@ -63,9 +60,9 @@ abstract class ElasticBridge
      */
     public static function __callStatic($method, $parameters)
     {
-       $static = (new static);//->$method(...$parameters);
+        $static = (new static); // ->$method(...$parameters);
 
-        return $static->forwardCallTo($static->newBridgeQuery(), $method, $parameters); //$this->forwardCallTo($this->newBridgeQuery(), $method, $parameters);
+        return $static->forwardCallTo($static->newBridgeQuery(), $method, $parameters); // $this->forwardCallTo($this->newBridgeQuery(), $method, $parameters);
     }
 
     /**
@@ -143,7 +140,6 @@ abstract class ElasticBridge
     }
 
     /**
-     * @param string $index
      * @return $this
      */
     public function setIndex(string $index): ElasticBridge

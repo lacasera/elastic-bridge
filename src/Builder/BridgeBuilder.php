@@ -376,8 +376,8 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param array $attributes
      * @return mixed|null
+     *
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
@@ -410,7 +410,7 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     /**
      * decreases the value of a field by the counter provided
-     * @return bool
+     *
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
@@ -421,7 +421,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @return bool
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
@@ -432,7 +431,7 @@ class BridgeBuilder implements BridgeBuilderInterface
 
         $res = $this->find($id);
 
-        if(!$res) {
+        if (! $res) {
             $id = $this->create($this->bridge->attributesToArray()['_source']);
 
             return boolval($id);

@@ -360,7 +360,7 @@ class QueryBuilder
 
     public function indexRequest(array $body, bool $asArray = true)
     {
-        $result =  $this->getConnection()
+        $result = $this->getConnection()
             ->getClient()
             ->index($body);
 
