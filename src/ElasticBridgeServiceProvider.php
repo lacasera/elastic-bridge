@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Lacasera\ElasticBridge;
 
 use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;
+use Lacasera\ElasticBridge\Connection\ConnectionInterface;
+use Lacasera\ElasticBridge\Connection\ElasticConnection;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -12,14 +16,22 @@ class ElasticBridgeServiceProvider extends PackageServiceProvider
     {
         /*
          * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
          */
         $package
             ->name('elastic-bridge')
-            ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_elastic_bridge_table')
+            ->hasConfigFile('elasticbridge')
             ->hasCommand(ElasticBridgeCommand::class);
+    }
+
+    /**
+     * @return void
+     *
+     * @throws \Spatie\LaravelPackageTools\Exceptions\InvalidPackage
+     */
+    public function register()
+    {
+        parent::register();
+
+        $this->app->bind(ConnectionInterface::class, ElasticConnection::class);
     }
 }
