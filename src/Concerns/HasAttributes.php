@@ -17,9 +17,6 @@ trait HasAttributes
     protected $meta = [];
 
     /**
-     * @param array $attributes
-     * @param array $meta
-     * @param bool $sync
      * @return $this
      */
     public function setRawAttributes(array $attributes = [], array $meta = [], bool $sync = true)
@@ -32,7 +29,6 @@ trait HasAttributes
     }
 
     /**
-     * @param $key
      * @return array|mixed
      */
     public function getAttribute($key)

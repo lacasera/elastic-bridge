@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
@@ -17,7 +18,6 @@ use Lacasera\ElasticBridge\DTO\Bucket;
 use Lacasera\ElasticBridge\DTO\Stats;
 use Lacasera\ElasticBridge\Enums\PaginationType;
 use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
-use Illuminate\Contracts\Support\Arrayable;
 
 abstract class ElasticBridge implements Arrayable, JsonSerializable
 {
@@ -184,9 +184,6 @@ abstract class ElasticBridge implements Arrayable, JsonSerializable
         return $this->attributesToArray()['_source'];
     }
 
-    /**
-     * @return array
-     */
     public function attributesToArray(): array
     {
         return $this->attributes;

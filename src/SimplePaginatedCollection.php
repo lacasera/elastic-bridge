@@ -21,7 +21,7 @@ class SimplePaginatedCollection extends Collection
      */
     public function previousPage()
     {
-        $result =  $this->from() - $this->size();
+        $result = $this->from() - $this->size();
 
         return $result > 0 ?: 0;
     }
@@ -49,7 +49,7 @@ class SimplePaginatedCollection extends Collection
         for ($page = 0; $page < $this->totalPages(); $page++) {
             $links['pages'][] = [
                 'page' => $page,
-                'from' => $page * $this->size()
+                'from' => $page * $this->size(),
             ];
         }
 
@@ -61,19 +61,16 @@ class SimplePaginatedCollection extends Collection
         return $links;
     }
 
-    /**
-     * @return int
-     */
     public function currentPage(): int
     {
         $from = $this->from();
         $size = $this->size();
 
-        if(!$from || $size) {
+        if (! $from || $size) {
             return 1;
         }
 
-       return (int) floor($from / $size) + 1;
+        return (int) floor($from / $size) + 1;
     }
 
     /**

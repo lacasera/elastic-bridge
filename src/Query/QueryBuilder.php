@@ -34,9 +34,6 @@ class QueryBuilder
 
     public function __construct(public ConnectionInterface $connection) {}
 
-    /**
-     * @return ConnectionInterface
-     */
     public function getConnection(): ConnectionInterface
     {
         return $this->connection;
@@ -52,10 +49,6 @@ class QueryBuilder
         return $this->makeSearchRequest($index, $columns);
     }
 
-    /**
-     * @param array $query
-     * @return void
-     */
     public function setRawPayload(array $query): void
     {
         $this->payload = $query;
@@ -79,7 +72,6 @@ class QueryBuilder
     }
 
     /**
-     * @param array $query
      * @return void
      */
     public function setSort(array $query)
@@ -108,13 +100,13 @@ class QueryBuilder
     }
 
     /**
-     *
      * @return array[]
+     *
      * @throws MissingTermLevelQuery
      */
     public function getPayload($columns = ['*']): array
     {
-        if (!$this->term) {
+        if (! $this->term) {
             throw new MissingTermLevelQuery('set term level query');
         }
 
@@ -128,8 +120,7 @@ class QueryBuilder
 
         $this->attachOptionalParameters($payload, $columns);
 
-
-     //   dd(json_encode($payload));
+        //   dd(json_encode($payload));
         return $payload;
     }
 
@@ -144,7 +135,6 @@ class QueryBuilder
     }
 
     /**
-     * @param array $payload
      * @return $this
      */
     public function setAggregate(array $payload): self
@@ -155,10 +145,6 @@ class QueryBuilder
     }
 
     /**
-     * @param $type
-     * @param $field
-     * @param $value
-     * @param $operator
      * @return void
      */
     protected function setFilter($type, $field, $value, $operator = null)
@@ -181,7 +167,6 @@ class QueryBuilder
     }
 
     /**
-     * @param array $payload
      * @return void
      */
     public function setRawFilters(array $payload)
@@ -198,7 +183,6 @@ class QueryBuilder
     }
 
     /**
-     * @param array $payload
      * @return void
      */
     public function setPagination(array $payload)
@@ -207,7 +191,6 @@ class QueryBuilder
     }
 
     /**
-     * @param string $type
      * @return $this
      */
     public function setType(string $type)
@@ -261,7 +244,7 @@ class QueryBuilder
      */
     public function makeRequest(string $index, $columns = ['*']): array
     {
-        $response =  $this->getConnection()
+        $response = $this->getConnection()
             ->getClient()
             ->search([
                 'index' => $index,
@@ -287,9 +270,6 @@ class QueryBuilder
         ], $bridge->id);
     }
 
-    /**
-     * @return bool
-     */
     public function hasPayload(): bool
     {
         return ! empty($this->payload);
@@ -366,7 +346,7 @@ class QueryBuilder
      */
     protected function attachOptionalParameters(array &$payload, array $columns): void
     {
-        if($this->hasSort()) {
+        if ($this->hasSort()) {
             $payload['sort'] = $this->sort;
         }
 
@@ -415,9 +395,6 @@ class QueryBuilder
         ];
     }
 
-    /**
-     * @return bool
-     */
     private function shouldAttachAggregate(): bool
     {
         return ! empty($this->aggregates);

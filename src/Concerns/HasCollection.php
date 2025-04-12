@@ -14,6 +14,6 @@ trait HasCollection
             $collection->setPagination($pagination);
         }
 
-       return $collection;
+        return $collection;
     }
 }
