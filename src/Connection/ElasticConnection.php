@@ -17,11 +17,15 @@ class ElasticConnection implements ConnectionInterface
      */
     public function __construct()
     {
-        $this->connection = ClientBuilder::create()
-            ->setBasicAuthentication(config('elasticbridge.username'), config('elasticbridge.password'))
-            ->setHosts(config('elasticbridge.host'))
-            ->setCABundle(config('elasticbridge.certificate_path'))
-            ->build();
+        $conn = ClientBuilder::create()
+            ->setApiKey(config('elasticbridge.api_key'))
+            ->setHosts(explode(',', config('elasticbridge.hosts')));
+
+        if (config('elasticbridge.certificate_path')) {
+            $conn->setCABundle(config('elasticbridge.certificate_path'));
+        }
+
+        $this->connection = $conn->build();
     }
 
     /**

@@ -6,8 +6,14 @@ namespace Lacasera\ElasticBridge\Concerns;
 
 trait HasCollection
 {
-    public function newCollection(array $models = [])
+    public function newCollection(array $items, array $pagination)
     {
-        return new static::$collectionClass($models);
+        $collection = static::$collectionClass::make($items);
+
+        if (method_exists($collection, 'setPagination')) {
+            $collection->setPagination($pagination);
+        }
+
+       return $collection;
     }
 }

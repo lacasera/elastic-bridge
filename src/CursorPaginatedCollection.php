@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge;
 
-class PaginatedCollection extends Collection
+class CursorPaginatedCollection extends Collection
 {
     /**
      * @return array
@@ -18,14 +18,6 @@ class PaginatedCollection extends Collection
 
             'total' => $this->total(),
         ];
-    }
-
-    /**
-     * @return array|mixed
-     */
-    public function total()
-    {
-        return data_get($this->first()->getMeta(), 'value');
     }
 
     /**

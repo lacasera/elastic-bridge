@@ -16,9 +16,6 @@ class QueryBuilder
 
     public const PAGINATION_SIZE = 15;
 
-    /**
-     * @var array|array[]
-     */
     protected array $payload = [];
 
     protected array $sort = [];
@@ -37,6 +34,9 @@ class QueryBuilder
 
     public function __construct(public ConnectionInterface $connection) {}
 
+    /**
+     * @return ConnectionInterface
+     */
     public function getConnection(): ConnectionInterface
     {
         return $this->connection;
@@ -52,6 +52,10 @@ class QueryBuilder
         return $this->makeSearchRequest($index, $columns);
     }
 
+    /**
+     * @param array $query
+     * @return void
+     */
     public function setRawPayload(array $query): void
     {
         $this->payload = $query;
@@ -60,7 +64,7 @@ class QueryBuilder
     /**
      * @return $this
      */
-    public function setPayload(string $key, mixed $payload)
+    public function setPayload(string $key, mixed $payload): static
     {
         $data = data_get($this->payload, $key);
 
@@ -75,6 +79,7 @@ class QueryBuilder
     }
 
     /**
+     * @param array $query
      * @return void
      */
     public function setSort(array $query)
@@ -103,56 +108,28 @@ class QueryBuilder
     }
 
     /**
-     * TODO refactor this method..
      *
      * @return array[]
-     *
      * @throws MissingTermLevelQuery
      */
     public function getPayload($columns = ['*']): array
     {
-        if (! $this->term) {
+        if (!$this->term) {
             throw new MissingTermLevelQuery('set term level query');
         }
 
-        if ($this->term === self::RAW_TERM_LEVEL) {
-            $body = $this->payload;
-        } else {
-            $body = [
-                $this->term => $this->payload,
-            ];
-        }
+        $body = $this->term === self::RAW_TERM_LEVEL ? $this->payload : [$this->term => $this->payload];
 
         if ($this->filters) {
             $body[$this->term]['filter'] = $this->filters;
         }
 
-        $payload[$this->type] = $body;
+        $payload = [$this->type => $body];
 
-        if ($this->hasSort()) {
-            $payload['sort'] = $this->sort;
-        }
+        $this->attachOptionalParameters($payload, $columns);
 
-        if ($this->shouldAttachAggregate()) {
-            $payload['aggs'] = $this->aggregates;
-        }
 
-        if ($this->isPaginating()) {
-            $payload = array_merge($payload, $this->paginate);
-        }
-
-        if ($this->isSelectingFields(collect($columns))) {
-            $payload['_source'] = $columns;
-        }
-
-        if ($this->range) {
-            $this->payload['query'] = $this->range;
-        }
-
-        /**
-         * @TODO: implement logging for queries.
-         * call $this->getRawPayload()
-         */
+     //   dd(json_encode($payload));
         return $payload;
     }
 
@@ -167,6 +144,7 @@ class QueryBuilder
     }
 
     /**
+     * @param array $payload
      * @return $this
      */
     public function setAggregate(array $payload): self
@@ -177,6 +155,10 @@ class QueryBuilder
     }
 
     /**
+     * @param $type
+     * @param $field
+     * @param $value
+     * @param $operator
      * @return void
      */
     protected function setFilter($type, $field, $value, $operator = null)
@@ -199,6 +181,7 @@ class QueryBuilder
     }
 
     /**
+     * @param array $payload
      * @return void
      */
     public function setRawFilters(array $payload)
@@ -215,6 +198,7 @@ class QueryBuilder
     }
 
     /**
+     * @param array $payload
      * @return void
      */
     public function setPagination(array $payload)
@@ -223,6 +207,7 @@ class QueryBuilder
     }
 
     /**
+     * @param string $type
      * @return $this
      */
     public function setType(string $type)
@@ -276,12 +261,18 @@ class QueryBuilder
      */
     public function makeRequest(string $index, $columns = ['*']): array
     {
-        return $this->getConnection()
+        $response =  $this->getConnection()
             ->getClient()
             ->search([
                 'index' => $index,
                 'body' => $this->getPayload($columns),
             ])->asArray();
+
+        if ($this->isPaginating()) {
+            return array_merge($response, ['pagination' => $this->paginate]);
+        }
+
+        return $response;
     }
 
     /**
@@ -296,6 +287,9 @@ class QueryBuilder
         ], $bridge->id);
     }
 
+    /**
+     * @return bool
+     */
     public function hasPayload(): bool
     {
         return ! empty($this->payload);
@@ -367,6 +361,32 @@ class QueryBuilder
         return $asArray ? $result->asArray() : $result->asBool();
     }
 
+    /**
+     * Attach optional parameters to the payload.
+     */
+    protected function attachOptionalParameters(array &$payload, array $columns): void
+    {
+        if($this->hasSort()) {
+            $payload['sort'] = $this->sort;
+        }
+
+        if ($this->shouldAttachAggregate()) {
+            $payload['aggs'] = $this->aggregates;
+        }
+
+        if ($this->isPaginating()) {
+            $payload = array_merge($payload, $this->paginate);
+        }
+
+        if ($this->isSelectingFields(collect($columns))) {
+            $payload['_source'] = $columns;
+        }
+
+        if ($this->range) {
+            $payload['query'] = $this->range;
+        }
+    }
+
     private function isSelectingFields(Collection $columns): bool
     {
         return $columns->isNotEmpty() && ! $columns->contains('*');
@@ -395,6 +415,9 @@ class QueryBuilder
         ];
     }
 
+    /**
+     * @return bool
+     */
     private function shouldAttachAggregate(): bool
     {
         return ! empty($this->aggregates);

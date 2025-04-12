@@ -8,15 +8,18 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JsonException;
+use JsonSerializable;
 use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\Concerns\FakeBridge;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
 use Lacasera\ElasticBridge\DTO\Bucket;
 use Lacasera\ElasticBridge\DTO\Stats;
+use Lacasera\ElasticBridge\Enums\PaginationType;
 use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
+use Illuminate\Contracts\Support\Arrayable;
 
-abstract class ElasticBridge
+abstract class ElasticBridge implements Arrayable, JsonSerializable
 {
     use FakeBridge;
     use ForwardsCalls;
@@ -60,9 +63,9 @@ abstract class ElasticBridge
      */
     public static function __callStatic($method, $parameters)
     {
-        $static = (new static); // ->$method(...$parameters);
+        $static = (new static);
 
-        return $static->forwardCallTo($static->newBridgeQuery(), $method, $parameters); // $this->forwardCallTo($this->newBridgeQuery(), $method, $parameters);
+        return $static->forwardCallTo($static->newBridgeQuery(), $method, $parameters);
     }
 
     /**
@@ -79,12 +82,16 @@ abstract class ElasticBridge
         return $bridge;
     }
 
-    public function hydrate(array $items, bool $isPaginating = false): mixed
+    public function hydrate(array $items, bool $isPaginating = false, ?string $pagingType = null): mixed
     {
         $instance = $this->newInstance();
 
         if ($isPaginating) {
-            static::$collectionClass = PaginatedCollection::class;
+            static::$collectionClass = $pagingType && $pagingType === PaginationType::SIMPLE->value
+                ? SimplePaginatedCollection::class
+                : CursorPaginatedCollection::class;
+
+            $requestPagination = data_get($items, 'pagination');
         }
 
         $meta = $items['hits']['total'];
@@ -93,9 +100,11 @@ abstract class ElasticBridge
             $this->setAggregateMarco($items['aggregations']);
         }
 
-        return $instance->newCollection(array_map(function ($item) use ($instance, $meta) {
+        $collections = array_map(function ($item) use ($instance, $meta) {
             return $instance->newFromBuilder($item, $meta);
-        }, $items['hits']['hits']));
+        }, $items['hits']['hits']);
+
+        return $instance->newCollection($collections, $requestPagination ?? []);
     }
 
     /**
@@ -172,13 +181,13 @@ abstract class ElasticBridge
 
     public function toArray(): array
     {
-        return $this->attributesToArray();
+        return $this->attributesToArray()['_source'];
     }
 
     /**
      * @return array
      */
-    public function attributesToArray()
+    public function attributesToArray(): array
     {
         return $this->attributes;
     }

@@ -7,19 +7,16 @@
 return [
 
     /**
-     * elastic host
+     * elastic search hosts.
+     * you can separate them by comma's if you have multiple hosts
+     * https://localhost:9200,https://localhost:93000
      */
-    'host' => [env('ELASTICSEARCH_HOST', 'https://localhost:9200')],
+    'hosts' => env('ELASTICSEARCH_HOSTS'),
 
     /**
-     * elastic username
+     * elasticsearch api key
      */
-    'username' => env('ELASTICSEARCH_USERNAME', 'elastic'),
-
-    /**
-     * elastic password
-     */
-    'password' => env('ELASTICSEARCH_PASSWORD', null),
+    'api_key' => env('ELASTICSEARCH_API_KEY'),
 
     /**
      * path to certificate file generated when installing elastic

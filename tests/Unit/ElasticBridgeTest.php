@@ -3,7 +3,8 @@
 namespace Lacasera\ElasticBridge\Tests\Unit;
 
 use Lacasera\ElasticBridge\Builder\BridgeBuilder;
-use Lacasera\ElasticBridge\PaginatedCollection;
+use Lacasera\ElasticBridge\CursorPaginatedCollection;
+use Lacasera\ElasticBridge\SimplePaginatedCollection;
 use Lacasera\ElasticBridge\Tests\Room;
 use Lacasera\ElasticBridge\Tests\TestCase;
 
@@ -43,7 +44,7 @@ class ElasticBridgeTest extends TestCase
     {
         $results = Room::asBoolean()->matchAll()->simplePaginate(4)->get();
 
-        $this->assertInstanceOf(PaginatedCollection::class, $results);
+        $this->assertInstanceOf(SimplePaginatedCollection::class, $results);
     }
 
     /**
@@ -52,7 +53,7 @@ class ElasticBridgeTest extends TestCase
     public function it_should_use_an_instance_of_paginating_collection_class_when_doing_cursor_pagination(): void
     {
         $results = Room::asBoolean()->matchAll()->cursorPaginate(4)->get();
-        $this->assertInstanceOf(PaginatedCollection::class, $results);
+        $this->assertInstanceOf(CursorPaginatedCollection::class, $results);
     }
 
     /**

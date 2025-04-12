@@ -62,8 +62,7 @@
         ],
         "analyse": "vendor/bin/phpstan analyse",
         "test": "vendor/bin/phpunit",
-        "format": "vendor/bin/pint",
-        "docs": "mkdocs serve"
+        "format": "vendor/bin/pint"
     },
     "config": {
         "sort-packages": true,

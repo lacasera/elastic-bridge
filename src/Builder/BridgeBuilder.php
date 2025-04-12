@@ -10,6 +10,7 @@ use Illuminate\Support\Traits\ForwardsCalls;
 use Lacasera\ElasticBridge\Concerns\HasAggregates;
 use Lacasera\ElasticBridge\Concerns\SetsTerm;
 use Lacasera\ElasticBridge\ElasticBridge;
+use Lacasera\ElasticBridge\Enums\PaginationType;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
 use Lacasera\ElasticBridge\Query\Traits\HasFilters;
 
@@ -26,6 +27,8 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     private bool $isPaginating = false;
 
+    private ?string $pagingType = null;
+
     public function __construct()
     {
         $this->query = app()->make(QueryBuilder::class);
@@ -41,23 +44,32 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this;
     }
 
+    /**
+     * @return ElasticBridge
+     */
     public function getBridge(): ElasticBridge
     {
         return $this->bridge;
     }
 
     /**
+     * @param array $columns
      * @return mixed
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws \Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery
      */
     public function all(array $columns = ['*'])
     {
         return $this->asBoolean()
             ->shouldMatchAll()
-            ->cursorPaginate($this->count())
+            ->cursor($this->count())
             ->get($columns);
     }
 
     /**
+     * @param string $field
+     * @param $value
      * @return $this
      */
     public function shouldMatch(string $field, $value): self
@@ -68,6 +80,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param int $size
      * @return $this
      */
     public function take(int $size)
@@ -78,6 +91,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param int $size
      * @return $this
      */
     public function skip(int $size): self
@@ -88,6 +102,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param int $size
      * @return $this
      */
     public function limit(int $size): self
@@ -98,6 +113,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param int $size
      * @return $this
      */
     public function offset(int $size): self
@@ -108,9 +124,10 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param float $boost
      * @return $this
      */
-    public function shouldMatchAll($boost = 1.0): self
+    public function shouldMatchAll(float $boost = 1.0): self
     {
         $this->query->setPayload('should', ['match_all' => ['boost' => $boost]]);
 
@@ -118,6 +135,8 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param string $field
+     * @param $value
      * @return $this
      */
     public function mustMatch(string $field, $value): self
@@ -134,6 +153,9 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param string $query
+     * @param string $field
+     * @param array $payload
      * @return $this
      */
     public function mustNot(string $query, string $field, array $payload): self
@@ -148,6 +170,9 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param string $query
+     * @param string $field
+     * @param string $value
      * @return $this
      */
     public function must(string $query, string $field, string $value): self
@@ -166,6 +191,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param float $boost
      * @return $this
      */
     public function matchAll(float $boost = 1.0): self
@@ -176,6 +202,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param array $query
      * @return $this
      */
     public function raw(array $query): self
@@ -186,6 +213,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param string $field
      * @return $this
      */
     public function mustExist(string $field): self
@@ -196,6 +224,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param string $field
      * @return $this
      */
     public function shouldExist(string $field): self
@@ -206,6 +235,9 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param string $field
+     * @param string $query
+     * @param array $options
      * @return $this
      */
     public function match(string $field, string $query, array $options = []): self
@@ -221,6 +253,8 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param string $field
+     * @param string $query
      * @return $this
      */
     public function orMatch(string $field, string $query): self
@@ -234,6 +268,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param $ids
      * @return mixed
      */
     public function find($ids)
@@ -302,37 +337,52 @@ class BridgeBuilder implements BridgeBuilderInterface
 
         $bridges = $builder->getBridges($columns);
 
-        return $builder->getBridge()->newCollection($bridges);
+        return $builder->getBridge()->newCollection($bridges, Arr::only($this->query->getPayload(), ['from', 'size']));
     }
 
+    /**
+     * @return int
+     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
+     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws \Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery
+     */
     public function count(): int
     {
         return $this->query->count($this->getBridge()->getIndex());
     }
 
     /**
+     * @param int $size
+     * @param int $from
      * @return $this
      */
-    public function simplePaginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0): self
+    public function paginate(int $size = QueryBuilder::PAGINATION_SIZE, int $from = 0): self
     {
         $this->query->setPagination(['from' => $from, 'size' => $size]);
         $this->isPaginating = true;
+        $this->pagingType = PaginationType::SIMPLE->value;
 
         return $this;
     }
 
     /**
+     * @param int $size
+     * @param $after
      * @return $this
      */
-    public function cursorPaginate(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): self
+    public function cursor(int $size = QueryBuilder::PAGINATION_SIZE,  $after = null): self
     {
         $paginate['size'] = $size;
 
-        if (! empty($sort)) {
-            $paginate['search_after'] = $sort;
+        if ($after) {
+            $paginate['search_after'] = is_array($after) ? $after : [$after];
         }
 
+       /// dd($paginate);
+
         $this->isPaginating = true;
+        $this->pagingType = PaginationType::CURSOR->value;
+
         $this->query->setPagination($paginate);
 
         return $this;
@@ -361,7 +411,8 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         return $this->bridge->hydrate(
             $this->query->get($this->getBridge()->getIndex(), $columns),
-            $this->isPaginating
+            $this->isPaginating,
+            $this->pagingType
         )->all();
     }
 
