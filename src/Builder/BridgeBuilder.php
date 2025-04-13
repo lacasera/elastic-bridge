@@ -253,9 +253,6 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @param $field
-     * @param string $query
-     * @param array $options
      * @return $this
      */
     public function multiMatch($field, string $query, array $options = []): self
@@ -267,7 +264,7 @@ class BridgeBuilder implements BridgeBuilderInterface
         $this->query->setPayload('multi_match', [
             'query' => $query,
             'fields' => $field,
-            ...$options
+            ...$options,
         ]);
 
         return $this;

@@ -106,7 +106,7 @@ class QueryBuilder
      */
     public function getPayload($columns = ['*']): array
     {
-        $body = !$this->term ? $this->payload : [$this->term => $this->payload];
+        $body = ! $this->term ? $this->payload : [$this->term => $this->payload];
 
         if ($this->filters) {
             $body[$this->term]['filter'] = $this->filters;
@@ -161,9 +161,6 @@ class QueryBuilder
         }
     }
 
-    /**
-     * @return void
-     */
     public function setRawFilters(array $payload): void
     {
         $this->filters[] = $payload;
@@ -177,9 +174,6 @@ class QueryBuilder
         return $this->getPayload();
     }
 
-    /**
-     * @return void
-     */
     public function setPagination(array $payload): void
     {
         $this->paginate = $payload;
@@ -314,8 +308,6 @@ class QueryBuilder
     }
 
     /**
-     * @return array
-     *
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
@@ -327,7 +319,7 @@ class QueryBuilder
             ->asArray();
     }
 
-    public function indexRequest(array $body, bool $asArray = true) : array|bool
+    public function indexRequest(array $body, bool $asArray = true): array|bool
     {
         $result = $this->getConnection()
             ->getClient()
