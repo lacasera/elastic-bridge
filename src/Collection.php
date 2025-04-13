@@ -13,7 +13,7 @@ class Collection extends BaseCollection
      */
     public function total()
     {
-        return data_get($this->first()->getMeta(), 'value');
+        return data_get($this->first()?->getMeta(), 'value');
     }
 
     /**

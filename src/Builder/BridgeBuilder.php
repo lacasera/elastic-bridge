@@ -253,9 +253,12 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
+     * @param $field
+     * @param string $query
+     * @param array $options
      * @return $this
      */
-    public function multiMatch($field, string $query): self
+    public function multiMatch($field, string $query, array $options = []): self
     {
         if (! is_array($field)) {
             $field = [$field];
@@ -264,6 +267,7 @@ class BridgeBuilder implements BridgeBuilderInterface
         $this->query->setPayload('multi_match', [
             'query' => $query,
             'fields' => $field,
+            ...$options
         ]);
 
         return $this;
@@ -275,6 +279,33 @@ class BridgeBuilder implements BridgeBuilderInterface
     public function matchPhrase(string $field, string $query, array $options = []): self
     {
         $this->query->setPayload('match_phrase', [
+            $field => [
+                'query' => $query,
+                ...$options,
+            ],
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function matchPhrasePrefix(string $field, string $query, array $options = []): self
+    {
+        $this->query->setPayload('match_phrase_prefix', [
+            $field => [
+                'query' => $query,
+                ...$options,
+            ],
+        ]);
+
+        return $this;
+    }
+
+    public function matchBoolPrefix(string $field, string $query, array $options = []): self
+    {
+        $this->query->setPayload('match_bool_prefix', [
             $field => [
                 'query' => $query,
                 ...$options,

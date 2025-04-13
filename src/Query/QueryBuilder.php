@@ -106,11 +106,7 @@ class QueryBuilder
      */
     public function getPayload($columns = ['*']): array
     {
-        if (! $this->term) {
-            throw new MissingTermLevelQuery('set term level query');
-        }
-
-        $body = $this->term === self::RAW_TERM_LEVEL ? $this->payload : [$this->term => $this->payload];
+        $body = !$this->term ? $this->payload : [$this->term => $this->payload];
 
         if ($this->filters) {
             $body[$this->term]['filter'] = $this->filters;
@@ -120,7 +116,6 @@ class QueryBuilder
 
         $this->attachOptionalParameters($payload, $columns);
 
-        //   dd(json_encode($payload));
         return $payload;
     }
 
@@ -169,7 +164,7 @@ class QueryBuilder
     /**
      * @return void
      */
-    public function setRawFilters(array $payload)
+    public function setRawFilters(array $payload): void
     {
         $this->filters[] = $payload;
     }
@@ -185,7 +180,7 @@ class QueryBuilder
     /**
      * @return void
      */
-    public function setPagination(array $payload)
+    public function setPagination(array $payload): void
     {
         $this->paginate = $payload;
     }
@@ -324,7 +319,7 @@ class QueryBuilder
      * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
      * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
      */
-    protected function searchRequest(array $body)
+    protected function searchRequest(array $body): array
     {
         return $this->getConnection()
             ->getClient()
@@ -332,7 +327,7 @@ class QueryBuilder
             ->asArray();
     }
 
-    public function indexRequest(array $body, bool $asArray = true)
+    public function indexRequest(array $body, bool $asArray = true) : array|bool
     {
         $result = $this->getConnection()
             ->getClient()
