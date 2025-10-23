@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Rector;
 
-use PhpParser\Node\Identifier;
 use Override;
 use PhpParser\Node;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\GroupUse;
 use PhpParser\Node\Stmt\Namespace_;
