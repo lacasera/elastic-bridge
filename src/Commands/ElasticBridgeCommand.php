@@ -38,17 +38,14 @@ class ElasticBridgeCommand extends Command
             ->append(DIRECTORY_SEPARATOR.$filename.'.php')
             ->value();
 
-        if (file_exists($file)) {
-            $this->info("bridge with the name $filename already exists");
+        $stubPath = __DIR__.DIRECTORY_SEPARATOR.'stubs'.DIRECTORY_SEPARATOR.'bridge.stub';
+        $stub = file_get_contents($stubPath) ?: "<?php\n\nnamespace %s;\n\nuse Lacasera\\ElasticBridge\\ElasticBridge;\n\nclass %s extends ElasticBridge\n{\n\n}\n";
 
-            return self::FAILURE;
+        $content = sprintf($stub, $namespace, $filename);
+
+        if (! str_contains($content, 'declare(strict_types=1);')) {
+            $content = str_replace("<?php\n", "<?php\ndeclare(strict_types=1);\n\n", $content);
         }
-
-        $content = sprintf(
-            file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'stubs'.DIRECTORY_SEPARATOR.'bridge.stub'),
-            $namespace,
-            $filename
-        );
 
         if (! is_dir($folder)) {
             mkdir($folder, 0777, true);
@@ -66,7 +63,7 @@ class ElasticBridgeCommand extends Command
         return app_path().DIRECTORY_SEPARATOR.substr($directoryPath, strpos($directoryPath, DIRECTORY_SEPARATOR) + 1);
     }
 
-    protected function parseFileName($name)
+    protected function parseFileName($name): string
     {
         return str_replace(' ', '', Str::headline(Str::singular($name)));
     }

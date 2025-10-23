@@ -16,6 +16,9 @@ use Lacasera\ElasticBridge\DTO\Bucket;
 use Lacasera\ElasticBridge\DTO\Stats;
 use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
 
+/**
+ * @property-read string|int|null $id
+ */
 abstract class ElasticBridge
 {
     use FakeBridge;
@@ -65,23 +68,22 @@ abstract class ElasticBridge
         return $static->forwardCallTo($static->newBridgeQuery(), $method, $parameters); // $this->forwardCallTo($this->newBridgeQuery(), $method, $parameters);
     }
 
-    /**
-     * @return $this
-     */
     public function newInstance(array $attributes = [], bool $exists = true): ElasticBridge
     {
-        $bridge = new static;
+        $static = new static;
 
-        $bridge->exists = $exists;
+        $static->exists = $exists;
 
-        $bridge->setIndex($this->getIndex());
+        $static->setIndex($this->getIndex());
 
-        return $bridge;
+        return $static;
     }
 
     public function hydrate(array $items, bool $isPaginating = false): mixed
     {
-        $instance = $this->newInstance();
+        $elasticBridge = $this->newInstance();
+
+        $originalCollectionClass = static::$collectionClass;
 
         if ($isPaginating) {
             static::$collectionClass = PaginatedCollection::class;
@@ -93,21 +95,20 @@ abstract class ElasticBridge
             $this->setAggregateMarco($items['aggregations']);
         }
 
-        return $instance->newCollection(array_map(function ($item) use ($instance, $meta) {
-            return $instance->newFromBuilder($item, $meta);
-        }, $items['hits']['hits']));
+        $collection = $elasticBridge->newCollection(array_map(fn ($item): \Lacasera\ElasticBridge\ElasticBridge => $elasticBridge->newFromBuilder($item, $meta), $items['hits']['hits']));
+
+        static::$collectionClass = $originalCollectionClass;
+
+        return $collection;
     }
 
-    /**
-     * @return $this
-     */
     public function newFromBuilder(array $attributes = [], array $meta = [], $connection = null): ElasticBridge
     {
-        $bridge = $this->newInstance([], true);
+        $elasticBridge = $this->newInstance([], true);
 
-        $bridge->setRawAttributes($attributes, $meta, true);
+        $elasticBridge->setRawAttributes($attributes, $meta, true);
 
-        return $bridge;
+        return $elasticBridge;
     }
 
     /**
@@ -136,12 +137,9 @@ abstract class ElasticBridge
 
     public function __set(string $name, mixed $value): void
     {
-        data_set($this->attributes, "_source.$name", $value);
+        data_set($this->attributes, '_source.'.$name, $value);
     }
 
-    /**
-     * @return $this
-     */
     public function setIndex(string $index): ElasticBridge
     {
         $this->index = $index;
@@ -158,8 +156,8 @@ abstract class ElasticBridge
     {
         try {
             $json = json_encode($this->jsonSerialize(), $options | JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw ErrorEncodingJson::forBridge($this, $e->getMessage());
+        } catch (JsonException $jsonException) {
+            throw ErrorEncodingJson::forBridge($this, $jsonException->getMessage());
         }
 
         return $json;
@@ -185,7 +183,8 @@ abstract class ElasticBridge
 
     protected function setAggregateMarco(array $aggregations): void
     {
-        $key = Arr::first(array_keys($aggregations));
+        $key = (string) Arr::first(array_keys($aggregations));
+
         $name = Str::camel($key);
 
         $results = $this->resolveAggregationResults($aggregations, $key);
@@ -196,24 +195,26 @@ abstract class ElasticBridge
     /**
      * @return array|\Illuminate\Support\Collection|Stats|mixed|void
      */
-    protected function resolveAggregationResults(array $aggregations, $key)
+    protected function resolveAggregationResults(array $aggregations, string $key)
     {
         if (str_contains($key, 'stats')) {
             return new Stats(data_get($aggregations, $key));
         }
 
         if ($this->isBucketAggregate($key)) {
-            return collect(data_get($aggregations, "$key.buckets"))->mapInto(Bucket::class)->collect();
+            return collect(data_get($aggregations, $key.'.buckets'))->mapInto(Bucket::class)->collect();
         }
 
         if (Arr::has($aggregations, $key)) {
             return data_get($aggregations, $key);
         }
+
+        return null;
     }
 
     protected function isBucketAggregate($key): bool
     {
-        $key = Arr::first(explode('_', $key));
+        $key = Arr::first(explode('_', (string) $key));
 
         return in_array($key, ['histogram', 'range']);
     }

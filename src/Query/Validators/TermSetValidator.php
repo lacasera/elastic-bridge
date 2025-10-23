@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Query\Validators;
 
+use Override;
+
 class TermSetValidator implements ValidatorInterface
 {
-    public function handle(array $payload)
+    #[Override]
+    public function handle(array $payload): void
     {
         $query = data_get($payload, 'body.query.match');
 

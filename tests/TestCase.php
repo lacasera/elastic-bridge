@@ -6,14 +6,17 @@ namespace Lacasera\ElasticBridge\Tests;
 
 use Lacasera\ElasticBridge\ElasticBridgeServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Override;
 
 class TestCase extends Orchestra
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
     }
 
+    #[Override]
     protected function getPackageProviders($app)
     {
         return [
@@ -21,7 +24,8 @@ class TestCase extends Orchestra
         ];
     }
 
-    public function getEnvironmentSetUp($app)
+    #[Override]
+    protected function getEnvironmentSetUp($app)
     {
         //
     }

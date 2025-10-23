@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Builder;
 
+use Elastic\Elasticsearch\Exception\AuthenticationException;
+use Elastic\Elasticsearch\Exception\ClientResponseException;
+use Elastic\Elasticsearch\Exception\MissingParameterException;
+use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
@@ -34,9 +38,9 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function setBridge(ElasticBridge $bridge): static
+    public function setBridge(ElasticBridge $elasticBridge): static
     {
-        $this->bridge = $bridge;
+        $this->bridge = $elasticBridge;
 
         return $this;
     }
@@ -46,10 +50,7 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this->bridge;
     }
 
-    /**
-     * @return mixed
-     */
-    public function all(array $columns = ['*'])
+    public function all(array $columns = ['*']): mixed
     {
         return $this->asBoolean()
             ->shouldMatchAll()
@@ -70,7 +71,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return $this
      */
-    public function take(int $size)
+    public function take(int $size): static
     {
         $this->query->setPagination(['size' => $size]);
 
@@ -300,9 +301,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         $builder = clone $this;
 
-        $bridges = $builder->getBridges($columns);
-
-        return $builder->getBridge()->newCollection($bridges);
+        return $builder->getBridges($columns);
     }
 
     public function count(): int
@@ -328,7 +327,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         $paginate['size'] = $size;
 
-        if (! empty($sort)) {
+        if ($sort !== []) {
             $paginate['search_after'] = $sort;
         }
 
@@ -345,7 +344,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         $this->query->setSort([
             $field => [
-                'order' => $direction,
+                'order' => strtolower($direction),
             ],
         ]);
 
@@ -353,16 +352,16 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws AuthenticationException
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
     public function getBridges(array $columns = ['*']): mixed
     {
         return $this->bridge->hydrate(
             $this->query->get($this->getBridge()->getIndex(), $columns),
             $this->isPaginating
-        )->all();
+        );
     }
 
     /**
@@ -378,9 +377,9 @@ class BridgeBuilder implements BridgeBuilderInterface
     /**
      * @return mixed|null
      *
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
      */
     public function create(array $attributes)
     {
@@ -405,25 +404,25 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function increment(string $field, int $counter = 1): bool
     {
-        return $this->scriptRequest("ctx._source.$field += params.count", ['count' => $counter]);
+        return $this->scriptRequest(sprintf('ctx._source.%s += params.count', $field), ['count' => $counter]);
     }
 
     /**
      * decreases the value of a field by the counter provided
      *
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
      */
     public function decrement(string $field, int $counter = 1): bool
     {
-        return $this->scriptRequest("ctx._source.$field -= params.count", ['count' => $counter]);
+        return $this->scriptRequest(sprintf('ctx._source.%s -= params.count', $field), ['count' => $counter]);
     }
 
     /**
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
      */
     public function save(): bool
     {
@@ -441,13 +440,11 @@ class BridgeBuilder implements BridgeBuilderInterface
     }
 
     /**
-     * @return bool
-     *
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
      */
-    public function scriptRequest(string $source, array $params)
+    public function scriptRequest(string $source, array $params): bool
     {
         return $this->query->update($this->bridge->getIndex(), [
             'script' => [
@@ -468,7 +465,7 @@ class BridgeBuilder implements BridgeBuilderInterface
 
         $results = $this->get();
 
-        $marco = Str::camel("{$type}_$field");
+        $marco = Str::camel(sprintf('%s_%s', $type, $field));
 
         return $results->$marco();
     }

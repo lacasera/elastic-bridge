@@ -6,13 +6,13 @@ namespace Lacasera\ElasticBridge\DTO;
 
 class Bucket
 {
-    protected $key = null;
+    protected $key;
 
-    protected $doc_count = null;
+    protected $doc_count;
 
-    protected $to = null;
+    protected $to;
 
-    protected $from = null;
+    protected $from;
 
     public function __construct(array $item)
     {

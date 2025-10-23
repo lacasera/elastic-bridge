@@ -7,17 +7,18 @@ namespace Lacasera\ElasticBridge\Connection;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Exception\AuthenticationException;
+use Override;
 
 class ElasticConnection implements ConnectionInterface
 {
-    private Client $connection;
+    private readonly Client $client;
 
     /**
-     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws AuthenticationException
      */
     public function __construct()
     {
-        $this->connection = ClientBuilder::create()
+        $this->client = ClientBuilder::create()
             ->setBasicAuthentication(config('elasticbridge.username'), config('elasticbridge.password'))
             ->setHosts(config('elasticbridge.host'))
             ->setCABundle(config('elasticbridge.certificate_path'))
@@ -27,8 +28,9 @@ class ElasticConnection implements ConnectionInterface
     /**
      * @throws AuthenticationException
      */
+    #[Override]
     public function getClient(): Client
     {
-        return $this->connection;
+        return $this->client;
     }
 }

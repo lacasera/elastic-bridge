@@ -84,9 +84,6 @@ trait HasFilters
         return $this;
     }
 
-    /**
-     * @return void
-     */
     public function filterByGeoDistanceRange(
         string $field,
         float $from,
@@ -95,7 +92,7 @@ trait HasFilters
         float $longitude,
         string $unit = 'km',
         $options = []
-    ) {
+    ): void {
         $this->query->setRawFilters([
             'geo_distance_range' => [
                 'from' => $from,

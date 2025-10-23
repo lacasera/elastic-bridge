@@ -9,13 +9,8 @@ use Lacasera\ElasticBridge\Tests\MockElasticConnection;
 
 trait FakeBridge
 {
-    /**
-     * @return void
-     */
-    public static function fake(array $response, int $status = 200)
+    public static function fake(array $response, int $status = 200): void
     {
-        app()->bind(ConnectionInterface::class, function () use ($response, $status) {
-            return new MockElasticConnection($response, $status);
-        });
+        app()->bind(ConnectionInterface::class, fn (): MockElasticConnection => new MockElasticConnection($response, $status));
     }
 }

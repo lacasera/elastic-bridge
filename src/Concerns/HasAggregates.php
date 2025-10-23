@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Concerns;
 
+use Illuminate\Support\Collection;
 use Lacasera\ElasticBridge\DTO\Bucket;
 use Lacasera\ElasticBridge\DTO\Stats;
 
@@ -36,10 +37,7 @@ trait HasAggregates
         return $this->primitiveAggregate('min', $field);
     }
 
-    /**
-     * @param  mixed  $field
-     */
-    public function sum($field): float
+    public function sum(mixed $field): float
     {
         if ($this->query->hasPayload()) {
             return $this->getAggregateForASpecificQuery('sum', $field);
@@ -86,7 +84,7 @@ trait HasAggregates
     }
 
     /**
-     * @return \Illuminate\Support\Collection<Bucket::class>
+     * @return Collection<Bucket::class>
      */
     public function histogram(string $field, float $interval)
     {
@@ -106,12 +104,12 @@ trait HasAggregates
     /**
      * @return array[]
      */
-    private function getAggregateQuery(string $type, string $field, $options = [])
+    private function getAggregateQuery(string $type, string $field, $options = []): array
     {
         $key = $this->getAggregateKey($type, $field);
 
         return [
-            "$key" => [
+            $key => [
                 $type => [
                     'field' => $field,
                     ...$options,
@@ -129,6 +127,6 @@ trait HasAggregates
 
     private function getAggregateKey(string $type, string $field): string
     {
-        return "{$field}_{$type}";
+        return sprintf('%s_%s', $field, $type);
     }
 }

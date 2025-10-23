@@ -5,27 +5,26 @@ declare(strict_types=1);
 namespace Lacasera\ElasticBridge\Tests;
 
 use Elastic\Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Http\Mock\Client;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 use Nyholm\Psr7\Response;
+use Override;
 
 class MockElasticConnection implements ConnectionInterface
 {
-    /**
-     * @var \Elastic\Elasticsearch\Client
-     */
-    protected $connection;
+    protected \Elastic\Elasticsearch\Client $connection;
 
     /**
-     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
+     * @throws AuthenticationException
      */
     public function __construct(array $response, int $status = 200)
     {
-        $mock = new Client;
+        $client = new Client;
 
         $this->connection = ClientBuilder::create()
-            ->setHttpClient($mock)
+            ->setHttpClient($client)
             ->build();
 
         $response = new Response($status, [
@@ -33,10 +32,10 @@ class MockElasticConnection implements ConnectionInterface
             'Content-Type' => 'application/json',
         ], json_encode($response));
 
-        $mock->addResponse($response);
+        $client->addResponse($response);
     }
 
-    #[\Override]
+    #[Override]
     public function getClient(): \Elastic\Elasticsearch\Client
     {
         return $this->connection;
