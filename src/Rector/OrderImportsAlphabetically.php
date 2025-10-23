@@ -18,7 +18,6 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 
 final class OrderImportsAlphabetically extends AbstractRector
 {
-
     /**
      * @return array<class-string<Node>>
      */
@@ -88,6 +87,7 @@ CODE
 
             $ka = strtolower($this->firstUseKey($a));
             $kb = strtolower($this->firstUseKey($b));
+
             return $ka <=> $kb;
         });
 
@@ -97,13 +97,14 @@ CODE
     }
 
     /**
-     * @param array<int, UseItem> $uses
+     * @param  array<int, UseItem>  $uses
      */
     private function sortUseUseList(array &$uses): void
     {
         usort($uses, function (UseItem $a, UseItem $b): int {
             $ka = $this->useUseKey($a);
             $kb = $this->useUseKey($b);
+
             return strcasecmp($ka, $kb);
         });
     }

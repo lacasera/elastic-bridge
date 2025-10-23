@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Rector;
+
 use Override;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -44,7 +45,7 @@ CODE
     }
 
     /**
-     * @param Class_ $node
+     * @param  Class_  $node
      */
     #[Override]
     public function refactor(Node $node): ?Node
@@ -68,6 +69,7 @@ CODE
         usort($sortedTraits, function (TraitUse $a, TraitUse $b): int {
             $traitNameA = $this->nodeNameResolver->getShortName($a->traits[0]);
             $traitNameB = $this->nodeNameResolver->getShortName($b->traits[0]);
+
             return strcmp($traitNameA, $traitNameB);
         });
 
@@ -88,7 +90,7 @@ CODE
     }
 
     /**
-     * @param array<int, string> $traitNames
+     * @param  array<int, string>  $traitNames
      */
     private function areTraitsOrdered(array $traitNames): bool
     {

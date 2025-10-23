@@ -11,6 +11,6 @@ trait FakeBridge
 {
     public static function fake(array $response, int $status = 200): void
     {
-        app()->bind(ConnectionInterface::class, fn(): MockElasticConnection => new MockElasticConnection($response, $status));
+        app()->bind(ConnectionInterface::class, fn (): MockElasticConnection => new MockElasticConnection($response, $status));
     }
 }
