@@ -5,9 +5,11 @@ namespace Lacasera\ElasticBridge\Tests\Feature;
 use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
 use Lacasera\ElasticBridge\Tests\Room;
 use Lacasera\ElasticBridge\Tests\TestCase;
+use Override;
 
 class QueryBuilderTest extends TestCase
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -15,11 +17,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function it_should_throw_a_missing_term_level_query_exception()
+    public function it_should_throw_a_missing_term_level_query_exception(): void
     {
         $this->expectException(MissingTermLevelQuery::class);
 
@@ -27,11 +27,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_build_match_all_query()
+    public function can_build_match_all_query(): void
     {
         $actual = Room::asRaw()->matchAll(2.0)->toQuery();
 
@@ -49,11 +47,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_build_a_should_match_all_query()
+    public function can_build_a_should_match_all_query(): void
     {
         $actual = Room::asRaw()->shouldMatchAll()->toQuery();
 
@@ -71,11 +67,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_build_a_must_match_query()
+    public function can_build_a_must_match_query(): void
     {
         $actual = Room::asBoolean()->mustMatch('currency', 'usd')->toQuery();
 
@@ -97,11 +91,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_build_a_raw_query()
+    public function can_build_a_raw_query(): void
     {
         $actual = Room::asRaw()->raw([
             'bool' => [
@@ -129,11 +121,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_build_a_must_exist_query()
+    public function can_build_a_must_exist_query(): void
     {
         $actual = Room::asRaw()->mustExist('currency')->toQuery();
 
@@ -151,11 +141,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_build_a_should_exist_query()
+    public function can_build_a_should_exist_query(): void
     {
         $actual = Room::asRaw()->shouldExist('currency')->toQuery();
 
@@ -173,11 +161,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_build_a_match_query()
+    public function can_build_a_match_query(): void
     {
         $actual = Room::query()
             ->asRaw()
@@ -198,11 +184,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_set_values_for_a_query_with_values()
+    public function can_set_values_for_a_query_with_values(): void
     {
         $actual = Room::asIds()->withValues(['1'])->toQuery();
 
@@ -218,11 +202,9 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function can_build_a_fuzzy_query()
+    public function can_build_a_fuzzy_query(): void
     {
         $actual = Room::query()
             ->asFuzzy()

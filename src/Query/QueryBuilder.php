@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Query;
 
+use Elastic\Elasticsearch\Exception\AuthenticationException;
+use Elastic\Elasticsearch\Exception\ClientResponseException;
+use Elastic\Elasticsearch\Exception\MissingParameterException;
+use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
@@ -43,9 +47,9 @@ class QueryBuilder
     }
 
     /**
-     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws AuthenticationException
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
     public function get(string $index, $columns = ['*']): mixed
     {
@@ -60,12 +64,12 @@ class QueryBuilder
     /**
      * @return $this
      */
-    public function setPayload(string $key, mixed $payload)
+    public function setPayload(string $key, mixed $payload): static
     {
         $data = data_get($this->payload, $key);
 
         if (! $data) {
-            $this->payload[$key] = ! is_array($payload) ? [$payload] : $payload;
+            $this->payload[$key] = is_array($payload) ? $payload : [$payload];
         } else {
             $data[] = $payload;
             data_set($this->payload, $key, $data);
@@ -74,10 +78,7 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * @return void
-     */
-    public function setSort(array $query)
+    public function setSort(array $query): void
     {
         $this->sort[] = $query;
     }
@@ -86,8 +87,8 @@ class QueryBuilder
      * @return mixed
      *
      * @throws MissingTermLevelQuery
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
     public function count(string $index)
     {
@@ -115,13 +116,9 @@ class QueryBuilder
             throw new MissingTermLevelQuery('set term level query');
         }
 
-        if ($this->term === self::RAW_TERM_LEVEL) {
-            $body = $this->payload;
-        } else {
-            $body = [
-                $this->term => $this->payload,
-            ];
-        }
+        $body = $this->term === self::RAW_TERM_LEVEL ? $this->payload : [
+            $this->term => $this->payload,
+        ];
 
         if ($this->filters) {
             $body[$this->term]['filter'] = $this->filters;
@@ -159,7 +156,7 @@ class QueryBuilder
     /**
      * @return $this
      */
-    public function setTerm(string $term)
+    public function setTerm(string $term): static
     {
         $this->term = $term;
 
@@ -176,10 +173,7 @@ class QueryBuilder
         return $this;
     }
 
-    /**
-     * @return void
-     */
-    protected function setFilter($type, $field, $value, $operator = null)
+    public function setFilter($type, $field, $value, $operator = null): void
     {
         if ($type === 'term') {
             $this->filters[] = [
@@ -198,10 +192,7 @@ class QueryBuilder
         }
     }
 
-    /**
-     * @return void
-     */
-    public function setRawFilters(array $payload)
+    public function setRawFilters(array $payload): void
     {
         $this->filters[] = $payload;
     }
@@ -214,10 +205,7 @@ class QueryBuilder
         return $this->getPayload();
     }
 
-    /**
-     * @return void
-     */
-    public function setPagination(array $payload)
+    public function setPagination(array $payload): void
     {
         $this->paginate = $payload;
     }
@@ -225,7 +213,7 @@ class QueryBuilder
     /**
      * @return $this
      */
-    public function setType(string $type)
+    public function setType(string $type): static
     {
         $this->type = $type;
 
@@ -234,13 +222,13 @@ class QueryBuilder
 
     private function hasSort(): bool
     {
-        return ! empty($this->sort);
+        return $this->sort !== [];
     }
 
     /**
-     * @throws \Elastic\Elasticsearch\Exception\AuthenticationException
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws AuthenticationException
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
     protected function makeSearchRequest(string $index, $columns = ['*']): mixed
     {
@@ -251,8 +239,8 @@ class QueryBuilder
      * @return mixed
      *
      * @throws MissingTermLevelQuery
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
     public function makeAggregateRequest(string $type, string $index)
     {
@@ -271,8 +259,8 @@ class QueryBuilder
 
     /**
      * @throws MissingTermLevelQuery
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
     public function makeRequest(string $index, $columns = ['*']): array
     {
@@ -285,39 +273,34 @@ class QueryBuilder
     }
 
     /**
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
      */
-    public function save(ElasticBridge $bridge): bool
+    public function save(ElasticBridge $elasticBridge): bool
     {
-        return $this->update($bridge->getIndex(), [
-            'doc' => data_get($bridge->attributesToArray(), '_source'),
-        ], $bridge->id);
+        return $this->update($elasticBridge->getIndex(), [
+            'doc' => data_get($elasticBridge->attributesToArray(), '_source'),
+        ], $elasticBridge->id);
     }
 
     public function hasPayload(): bool
     {
-        return ! empty($this->payload);
+        return $this->payload !== [];
     }
 
     /**
      * @return $this
      */
-    public function range(string $field, string $operator, $value)
+    public function range(string $field, string $operator, $value): static
     {
         $existing = data_get($this->hasPayload() ? $this->filters : $this->range, 'range.'.$field);
 
-        if ($existing) {
-
-            $payload = array_merge($existing["$field"], [$operator => $value]);
-        } else {
-            $payload = [
-                "$field" => [
-                    $operator => $value,
-                ],
-            ];
-        }
+        $payload = $existing ? array_merge($existing[$field], [$operator => $value]) : [
+            $field => [
+                $operator => $value,
+            ],
+        ];
 
         if ($this->hasPayload()) {
             data_set($this->filters, 'range', $payload);
@@ -329,9 +312,9 @@ class QueryBuilder
     }
 
     /**
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\MissingParameterException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws MissingParameterException
+     * @throws ServerResponseException
      */
     public function update(string $index, array $body, $id): bool
     {
@@ -347,8 +330,8 @@ class QueryBuilder
     /**
      * @return array
      *
-     * @throws \Elastic\Elasticsearch\Exception\ClientResponseException
-     * @throws \Elastic\Elasticsearch\Exception\ServerResponseException
+     * @throws ClientResponseException
+     * @throws ServerResponseException
      */
     protected function searchRequest(array $body)
     {
@@ -374,7 +357,7 @@ class QueryBuilder
 
     private function isPaginating(): bool
     {
-        return ! empty($this->paginate);
+        return $this->paginate !== [];
     }
 
     /**
@@ -397,6 +380,6 @@ class QueryBuilder
 
     private function shouldAttachAggregate(): bool
     {
-        return ! empty($this->aggregates);
+        return $this->aggregates !== [];
     }
 }

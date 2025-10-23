@@ -9,8 +9,8 @@ use Lacasera\ElasticBridge\ElasticBridge;
 
 class ErrorEncodingJson extends Exception
 {
-    public static function forBridge(ElasticBridge $bridge, $message)
+    public static function forBridge(ElasticBridge $elasticBridge, string $message): static
     {
-        return new static('Error encoding bridge ['.get_class($bridge).'] with index ['.$bridge->getIndex().'] to JSON: '.$message);
+        return new static('Error encoding bridge ['.$elasticBridge::class.'] with index ['.$elasticBridge->getIndex().'] to JSON: '.$message);
     }
 }

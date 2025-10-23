@@ -6,10 +6,7 @@ namespace Lacasera\ElasticBridge;
 
 class PaginatedCollection extends Collection
 {
-    /**
-     * @return array
-     */
-    public function links()
+    public function links(): array
     {
         return [
             'previous' => $this->previousSort(),

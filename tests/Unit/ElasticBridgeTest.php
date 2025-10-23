@@ -6,9 +6,11 @@ use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\PaginatedCollection;
 use Lacasera\ElasticBridge\Tests\Room;
 use Lacasera\ElasticBridge\Tests\TestCase;
+use Override;
 
 class ElasticBridgeTest extends TestCase
 {
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -17,11 +19,9 @@ class ElasticBridgeTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function it_can_get_index_from_class_name()
+    public function it_can_get_index_from_class_name(): void
     {
         $this->assertEquals('rooms', (new Room)->getIndex());
     }
@@ -56,11 +56,9 @@ class ElasticBridgeTest extends TestCase
     }
 
     /**
-     * @return void
-     *
      * @test
      */
-    public function it_should_return_an_instance_of_query_builder_class()
+    public function it_should_return_an_instance_of_query_builder_class(): void
     {
         $this->assertInstanceOf(BridgeBuilder::class, Room::query());
     }

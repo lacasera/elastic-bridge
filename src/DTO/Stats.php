@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Lacasera\ElasticBridge\DTO;
 
 use Illuminate\Support\Collection;
+use Override;
+use Stringable;
 
-class Stats
+class Stats implements Stringable
 {
     protected float $min;
 
@@ -25,9 +27,10 @@ class Stats
         }
     }
 
+    #[Override]
     public function __toString(): string
     {
-        return json_encode($this->toArray());
+        return (string) json_encode($this->toArray());
     }
 
     public function avg(): float

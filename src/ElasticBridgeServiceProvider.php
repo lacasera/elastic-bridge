@@ -7,11 +7,14 @@ namespace Lacasera\ElasticBridge;
 use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 use Lacasera\ElasticBridge\Connection\ElasticConnection;
+use Override;
+use Spatie\LaravelPackageTools\Exceptions\InvalidPackage;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class ElasticBridgeServiceProvider extends PackageServiceProvider
 {
+    #[Override]
     public function configurePackage(Package $package): void
     {
         /*
@@ -24,11 +27,10 @@ class ElasticBridgeServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * @return void
-     *
-     * @throws \Spatie\LaravelPackageTools\Exceptions\InvalidPackage
+     * @throws InvalidPackage
      */
-    public function register()
+    #[Override]
+    public function register(): void
     {
         parent::register();
 
