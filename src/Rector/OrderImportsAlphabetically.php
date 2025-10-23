@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Rector;
 
+use PhpParser\Node\Identifier;
 use Override;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
@@ -107,13 +108,13 @@ CODE
         });
     }
 
-    private function useUseKey(UseItem $useUse): string
+    private function useUseKey(UseItem $useItem): string
     {
-        if ($useUse->alias !== null) {
-            return $useUse->alias->toString();
+        if ($useItem->alias instanceof Identifier) {
+            return $useItem->alias->toString();
         }
 
-        return (string) $this->nodeNameResolver->getName($useUse->name);
+        return (string) $this->nodeNameResolver->getName($useItem->name);
     }
 
     private function useTypeWeight(Stmt $stmt): int

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Rector;
+use Override;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\TraitUse;
@@ -15,11 +16,13 @@ final class OrderTraitsAlphabetically extends AbstractRector
     /**
      * @return array<class-string<Node>>
      */
+    #[Override]
     public function getNodeTypes(): array
     {
         return [Class_::class];
     }
 
+    #[Override]
     public function getRuleDefinition(): RuleDefinition
     {
         return new RuleDefinition('Order trait use statements alphabetically', [
@@ -43,6 +46,7 @@ CODE
     /**
      * @param Class_ $node
      */
+    #[Override]
     public function refactor(Node $node): ?Node
     {
         $traits = $this->collectTraits($node);
