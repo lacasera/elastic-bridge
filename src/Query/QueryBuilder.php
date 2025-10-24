@@ -104,27 +104,39 @@ class QueryBuilder
     }
 
     /**
-     * TODO refactor this method..
+     * Build the query payload deterministically.
      *
-     * @return array[]
      *
      * @throws MissingTermLevelQuery
      */
     public function getPayload($columns = ['*']): array
     {
-        if (! $this->term) {
+        if ($this->term === null) {
             throw new MissingTermLevelQuery('set term level query');
         }
 
-        $body = $this->term === self::RAW_TERM_LEVEL ? $this->payload : [
-            $this->term => $this->payload,
-        ];
-
-        if ($this->filters) {
-            $body[$this->term]['filter'] = $this->filters;
+        if ($this->term === self::RAW_TERM_LEVEL) {
+            $body = $this->payload;
+        } elseif ($this->term === 'bool') {
+            $body = ['bool' => $this->payload];
+        } else {
+            $body = [$this->term => $this->payload];
         }
 
-        $payload[$this->type] = $body;
+        $filters = $this->filters;
+
+        $rangeEntries = data_get($this->range, 'range', []);
+        if (is_array($rangeEntries) && $rangeEntries !== []) {
+            foreach ($rangeEntries as $field => $conditions) {
+                $filters[] = ['range' => [$field => $conditions]];
+            }
+        }
+
+        if ($filters !== [] && array_key_exists('bool', $body)) {
+            $body['bool']['filter'] = $filters;
+        }
+
+        $payload = [$this->type => $body];
 
         if ($this->hasSort()) {
             $payload['sort'] = $this->sort;
@@ -142,14 +154,6 @@ class QueryBuilder
             $payload['_source'] = $columns;
         }
 
-        if ($this->range) {
-            $this->payload['query'] = $this->range;
-        }
-
-        /**
-         * @TODO: implement logging for queries.
-         * call $this->getRawPayload()
-         */
         return $payload;
     }
 

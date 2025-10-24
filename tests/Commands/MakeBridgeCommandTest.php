@@ -4,12 +4,11 @@ namespace Lacasera\ElasticBridge\Tests\Commands;
 
 use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;
 use Lacasera\ElasticBridge\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class MakeBridgeCommandTest extends TestCase
 {
-    /**
-     * @test
-     */
+    #[Test]
     public function it_should_create_file_in_default_name_namespace(): void
     {
         $this->artisan(ElasticBridgeCommand::class, [
@@ -23,9 +22,7 @@ class MakeBridgeCommandTest extends TestCase
         $this->assertEquals($expected, $this->getFileContent('App\\Bridges', 'HotelRoom'));
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_should_create_create_file_in_a_given_namespace(): void
     {
         $namespace = 'App\\Elastic\\Models';

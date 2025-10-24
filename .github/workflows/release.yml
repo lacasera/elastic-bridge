@@ -1,0 +1,74 @@
+name: Release Composer Package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Create Tag & GitHub Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # allows creating tags & releases
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required to get all git tags
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Get current version tag
+        id: current_version
+        run: |
+          # Get latest tag (default to v0.0.0 if none exist)
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "current=$TAG" >> $GITHUB_OUTPUT
+          echo "Current version: $TAG"
+
+      - name: Determine next version
+        id: next_version
+        run: |
+          # Simple patch bump logic (v1.2.3 -> v1.2.4)
+          current="${{ steps.current_version.outputs.current }}"
+          base="${current#v}"
+          IFS='.' read -r major minor patch <<< "$base"
+          patch=$((patch + 1))
+          next="v${major}.${minor}.${patch}"
+          echo "version=$next" >> $GITHUB_OUTPUT
+          echo "Next version: $next"
+
+      - name: Generate changelog (optional)
+        id: changelog
+        run: |
+          echo "Generating changelog from commits..."
+          git log "$(git describe --tags --abbrev=0 2>/dev/null || echo '')"..HEAD --pretty=format:"- %s" > changelog.txt
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat changelog.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag and GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.next_version.outputs.version }}
+          name: Release ${{ steps.next_version.outputs.version }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify Packagist
+        if: success() && secrets.PACKAGIST_USERNAME != '' && secrets.PACKAGIST_TOKEN != ''
+        run: |
+          echo "Notifying Packagist..."
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"repository\":{\"url\":\"https://github.com/${{ github.repository }}\"}}" \
+            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}"
