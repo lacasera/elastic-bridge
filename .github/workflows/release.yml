@@ -65,10 +65,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify Packagist
-        if: success() && secrets.PACKAGIST_USERNAME != '' && secrets.PACKAGIST_TOKEN != ''
+        env:
+          PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
         run: |
-          echo "Notifying Packagist..."
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -d "{\"repository\":{\"url\":\"https://github.com/${{ github.repository }}\"}}" \
-            "https://packagist.org/api/update-package?username=${{ secrets.PACKAGIST_USERNAME }}&apiToken=${{ secrets.PACKAGIST_TOKEN }}"
+          if [ -n "$PACKAGIST_USERNAME" ] && [ -n "$PACKAGIST_TOKEN" ]; then
+            echo "Notifying Packagist..."
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -d "{\"repository\":{\"url\":\"https://github.com/${{ github.repository }}\"}}" \
+              "https://packagist.org/api/update-package?username=$PACKAGIST_USERNAME&apiToken=$PACKAGIST_TOKEN"
+          else
+            echo "Skipping Packagist notification (credentials not set)."
+          fi
