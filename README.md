@@ -1,17 +1,16 @@
-# An eloquent way to search
+# An Eloquent Way To Search.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/lacasera/elastic-bridge.svg?style=flat-square)](https://packagist.org/packages/lacasera/elastic-bridge)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/lacasera/elastic-bridge/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/lacasera/elastic-bridge/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/lacasera/elastic-bridge/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/lacasera/elastic-bridge/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/lacasera/elastic-bridge.svg?style=flat-square)](https://packagist.org/packages/lacasera/elastic-bridge)
 
-ElasticBridge allows you to seamlessly "Bridge" the gap between Laravel's Eloquent models and Elasticsearch. 
+ElasticBridge allows you to write `Fluent`, `Eloquent` like Elasticsearch queries in your laravel application.
 
-With ElasticBridge, developers can interact with Elasticsearch indexes as easily as they would with traditional Eloquent models, bringing the power of Elasticsearch into the Laravel ecosystem with minimal effort.
+With ElasticBridge, you can interact with Elasticsearch indexes as easily as you would with traditional Eloquent models, bringing the power of Elasticsearch into the Laravel ecosystem with no effort.
 
 This package simplifies the complexity of Elasticsearch queries, allowing you to execute powerful search operations while maintaining the elegance and familiarity of Laravel’s syntax.
 
-Whether you're building complex search features or managing large datasets, ElasticBridge makes it easy to leverage Elasticsearch’s capabilities directly within your Laravel application.
 
 ## Overview
 ```bash
@@ -62,7 +61,7 @@ class SearchController extends  Controller
 }
 ```
 
-[Usage](doc)
+# [Documentation](https://elasticbridge.dev)
 
 ```bash
 composer test

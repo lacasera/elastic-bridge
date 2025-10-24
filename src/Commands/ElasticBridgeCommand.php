@@ -26,7 +26,7 @@ class ElasticBridgeCommand extends Command
         $name = $this->argument('name');
 
         if (! $name) {
-            $name = text('What is the name of the bridge? (Elastic Index) ', 'Films');
+            $name = text('What is the name of the bridge? (Elastic Index) ', 'Film');
         }
 
         $namespace = config('elasticbridge.namespace') ?? 'App\\Bridges';

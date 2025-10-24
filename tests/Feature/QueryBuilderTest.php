@@ -6,6 +6,7 @@ use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
 use Lacasera\ElasticBridge\Tests\Room;
 use Lacasera\ElasticBridge\Tests\TestCase;
 use Override;
+use PHPUnit\Framework\Attributes\Test;
 
 class QueryBuilderTest extends TestCase
 {
@@ -16,9 +17,7 @@ class QueryBuilderTest extends TestCase
         Room::fake($this->getFakeData());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_should_throw_a_missing_term_level_query_exception(): void
     {
         $this->expectException(MissingTermLevelQuery::class);
@@ -26,9 +25,7 @@ class QueryBuilderTest extends TestCase
         Room::matchAll(2.0)->toQuery();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_build_match_all_query(): void
     {
         $actual = Room::asRaw()->matchAll(2.0)->toQuery();
@@ -46,9 +43,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_build_a_should_match_all_query(): void
     {
         $actual = Room::asRaw()->shouldMatchAll()->toQuery();
@@ -66,9 +61,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_build_a_must_match_query(): void
     {
         $actual = Room::asBoolean()->mustMatch('currency', 'usd')->toQuery();
@@ -90,9 +83,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_build_a_raw_query(): void
     {
         $actual = Room::asRaw()->raw([
@@ -120,9 +111,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_build_a_must_exist_query(): void
     {
         $actual = Room::asRaw()->mustExist('currency')->toQuery();
@@ -140,9 +129,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_build_a_should_exist_query(): void
     {
         $actual = Room::asRaw()->shouldExist('currency')->toQuery();
@@ -160,9 +147,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_build_a_match_query(): void
     {
         $actual = Room::query()
@@ -183,9 +168,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_set_values_for_a_query_with_values(): void
     {
         $actual = Room::asIds()->withValues(['1'])->toQuery();
@@ -201,9 +184,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function can_build_a_fuzzy_query(): void
     {
         $actual = Room::query()
