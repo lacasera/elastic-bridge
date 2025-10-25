@@ -30,7 +30,7 @@ class PaginatedCollection extends Collection
      */
     public function previousSort()
     {
-        return data_get($this->first()->toArray(), 'sort');
+        return data_get($this->first()->getRawAttributes(), 'sort');
     }
 
     /**
@@ -38,6 +38,6 @@ class PaginatedCollection extends Collection
      */
     public function nextSort()
     {
-        return data_get($this->last()->toArray(), 'sort');
+        return data_get($this->last()->getRawAttributes(), 'sort');
     }
 }
