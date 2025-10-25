@@ -1,0 +1,73 @@
+name: Question
+description: Ask a question about using ElasticBridge
+title: "[Question]: "
+labels: ["question"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Thanks for your interest in ElasticBridge! Please provide as much detail as possible to help us answer your question.
+              
+              **Note**: For general discussions or community help, consider using [GitHub Discussions](https://github.com/Lacasera/elastic-bridge/discussions).
+    - type: textarea
+      id: question
+      attributes:
+          label: Your Question
+          description: What would you like to know? Please be as specific as possible.
+          placeholder: How do I use the `asBoolean()` method with nested queries?
+      validations:
+          required: true
+    - type: textarea
+      id: what-tried
+      attributes:
+          label: What have you tried?
+          description: Share any code you've tried or approaches you've attempted. This helps us understand your use case better.
+          placeholder: |
+              I tried:
+              ```php
+              HotelRoom::asBoolean()
+                  ->mustMatch('name', 'Hotel')
+                  ->get();
+              ```
+      validations:
+          required: false
+    - type: textarea
+      id: context
+      attributes:
+          label: Additional Context
+          description: Any additional information that might help us answer your question (e.g., what you're trying to achieve, specific use case, etc.)
+          placeholder: I'm building a hotel booking system and need to search across multiple fields...
+      validations:
+          required: false
+    - type: input
+      id: package-version
+      attributes:
+          label: Package Version
+          description: What version of ElasticBridge are you using?
+          placeholder: 2.0.0
+      validations:
+          required: false
+    - type: input
+      id: php-version
+      attributes:
+          label: PHP Version
+          description: What version of PHP are you running?
+          placeholder: 8.2.0
+      validations:
+          required: false
+    - type: input
+      id: laravel-version
+      attributes:
+        label: Laravel Version
+        description: What version of Laravel are you running?
+        placeholder: 11.0.0
+      validations:
+        required: false
+    - type: checkboxes
+      id: documentation-check
+      attributes:
+          label: Documentation
+          description: Before asking, please confirm you've checked our documentation
+          options:
+              - label: I have checked the [documentation](https://elasticbridge.dev) and couldn't find an answer
+                required: true

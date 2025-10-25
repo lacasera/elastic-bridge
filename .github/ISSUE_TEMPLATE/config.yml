@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Ask a question
-    url: https://github.com/Lacasera/elastic-bridge/discussions/new?category=q-a
-    about: Ask the community for help
-  - name: Request a feature
-    url: https://github.com/Lacasera/elastic-bridge/discussions/new?category=ideas
-    about: Share ideas for new features
-  - name: Report a security issue
-    url: https://github.com/Lacasera/elastic-bridge/security/policy
-    about: Learn how to notify us for sensitive bugs
+  - name: 📖 Documentation
+    url: https://elasticbridge.dev
+    about: Read the official documentation
+  - name: 💬 Community Discussions
+    url: https://github.com/Lacasera/elastic-bridge/discussions
+    about: Join the community discussions for general questions and ideas
+  - name: 🔒 Report a Security Vulnerability (Private)
+    url: https://github.com/Lacasera/elastic-bridge/security/advisories/new
+    about: Privately report serious security vulnerabilities
