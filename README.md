@@ -9,8 +9,29 @@ ElasticBridge allows you to write `Fluent`, `Eloquent` like Elasticsearch querie
 
 With ElasticBridge, you can interact with Elasticsearch indexes as easily as you would with traditional Eloquent models, bringing the power of Elasticsearch into the Laravel ecosystem with no effort.
 
-This package simplifies the complexity of Elasticsearch queries, allowing you to execute powerful search operations while maintaining the elegance and familiarity of Laravel’s syntax.
+This package simplifies the complexity of Elasticsearch queries, allowing you to execute powerful search operations while maintaining the elegance and familiarity of Laravel's syntax.
 
+## Requirements
+
+- PHP 8.2 or 8.3
+- Laravel 10.x, 11.x, or 12.x
+- Elasticsearch 8.x
+
+## Compatibility Matrix
+
+| Laravel Version | PHP Version | Testbench Version | Carbon Version | PHPUnit Version |
+|----------------|-------------|-------------------|----------------|-----------------|
+| 10.x           | 8.2, 8.3    | 8.*              | ^2.63          | ^10.5           |
+| 11.x           | 8.2, 8.3    | 9.*              | ^2.63          | ^10.5           |
+| 12.x           | 8.3         | 10.*             | ^3.8.4         | ^11.5.3         |
+
+## Installation
+
+Install the package via Composer:
+
+```bash
+composer require lacasera/elastic-bridge
+```
 
 ## Overview
 ```bash
