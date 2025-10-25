@@ -125,10 +125,16 @@ class QueryBuilder
 
         $filters = $this->filters;
 
-        $rangeEntries = data_get($this->range, 'range', []);
-        if (is_array($rangeEntries) && $rangeEntries !== []) {
-            foreach ($rangeEntries as $field => $conditions) {
-                $filters[] = ['range' => [$field => $conditions]];
+        $rangeEntries = $this->range;
+
+        if ($this->term === 'range' && $rangeEntries !== []) {
+            if (count($rangeEntries) === 1) {
+                $body = ['range' => $rangeEntries];
+            } else {
+                $body = ['bool' => []];
+                foreach ($rangeEntries as $field => $conditions) {
+                    $filters[] = ['range' => [$field => $conditions]];
+                }
             }
         }
 
@@ -298,19 +304,9 @@ class QueryBuilder
      */
     public function range(string $field, string $operator, $value): static
     {
-        $existing = data_get($this->hasPayload() ? $this->filters : $this->range, 'range.'.$field);
-
-        $payload = $existing ? array_merge($existing[$field], [$operator => $value]) : [
-            $field => [
-                $operator => $value,
-            ],
-        ];
-
-        if ($this->hasPayload()) {
-            data_set($this->filters, 'range', $payload);
-        } else {
-            data_set($this->range, 'range.'.$field, $payload);
-        }
+        // Collect range constraints by field. Supports chaining to merge ops.
+        $existing = $this->range[$field] ?? [];
+        $this->range[$field] = array_merge($existing, [$operator => $value]);
 
         return $this;
     }
