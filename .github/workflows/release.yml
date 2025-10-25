@@ -45,15 +45,6 @@ jobs:
           echo "version=$next" >> $GITHUB_OUTPUT
           echo "Next version: $next"
 
-      - name: Generate changelog (optional)
-        id: changelog
-        run: |
-          echo "Generating changelog from commits..."
-          git log "$(git describe --tags --abbrev=0 2>/dev/null || echo '')"..HEAD --pretty=format:"- %s" > changelog.txt
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          cat changelog.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
       - name: Create Git tag and GitHub release
         uses: softprops/action-gh-release@v2
         with:
