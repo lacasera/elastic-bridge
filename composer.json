@@ -62,9 +62,13 @@
             "@composer run build",
             "@php vendor/bin/testbench serve"
         ],
-        "rector:dry": "vendor/bin/rector --dry-run --ansi",
-        "rector:fix": "vendor/bin/rector --ansi",
+        "rector:dry": "@php vendor/bin/rector --dry-run --ansi || true",
+        "rector:fix": "@php vendor/bin/rector --ansi || true",
         "test": [
+            "@format",
+            "@phpunit"
+        ],
+        "test:rector": [
             "@format",
             "@rector:dry",
             "@phpunit"

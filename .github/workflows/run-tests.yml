@@ -60,6 +60,8 @@ jobs:
           composer require --dev "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           # Larastan v2 doesn't support Illuminate 12; use v3 on L12
           if [[ "${{ matrix.laravel }}" == "12.*" ]]; then
+            # Remove Rector since it conflicts with PHPStan 2.x
+            composer remove --dev rector/rector --no-interaction --no-update
             composer require --dev \
               larastan/larastan:^3.0 \
               phpstan/phpstan:^2.1 \
