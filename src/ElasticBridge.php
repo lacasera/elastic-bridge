@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge;
 
-use Override;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Arr;
@@ -19,6 +18,7 @@ use Lacasera\ElasticBridge\Concerns\HasCollection;
 use Lacasera\ElasticBridge\DTO\Bucket;
 use Lacasera\ElasticBridge\DTO\Stats;
 use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
+use Override;
 
 /**
  * @property-read string|int|null $id
