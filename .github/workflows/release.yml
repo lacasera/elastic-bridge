@@ -47,12 +47,21 @@ jobs:
 
       - name: Generate changelog (optional)
         id: changelog
+        shell: bash
         run: |
           echo "Generating changelog from commits..."
-          git log "$(git describe --tags --abbrev=0 2>/dev/null || echo '')"..HEAD --pretty=format:"- %s" > changelog.txt
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          cat changelog.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          git log "$(git describe --tags --abbrev=0 2>/dev/null || echo '')"..HEAD --pretty=format:"- %s" > changelog.txt || true
+
+          if [ ! -s changelog.txt ]; then
+            echo "No new commits found."
+            echo "changelog=No new changes" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "changelog<<EOF"
+              cat changelog.txt
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Create Git tag and GitHub release
         uses: softprops/action-gh-release@v2
