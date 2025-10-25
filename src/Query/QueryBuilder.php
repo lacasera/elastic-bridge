@@ -125,16 +125,12 @@ class QueryBuilder
 
         $filters = $this->filters;
 
-        // Normalize range entries collected via asRange()->range(...)
         $rangeEntries = $this->range;
 
-        // If the term is specifically 'range', build a valid range query.
         if ($this->term === 'range' && $rangeEntries !== []) {
             if (count($rangeEntries) === 1) {
-                // Single field range: { query: { range: { field: { ops } } } }
                 $body = ['range' => $rangeEntries];
             } else {
-                // Multiple fields require bool/filter of separate range clauses.
                 $body = ['bool' => []];
                 foreach ($rangeEntries as $field => $conditions) {
                     $filters[] = ['range' => [$field => $conditions]];
@@ -142,7 +138,6 @@ class QueryBuilder
             }
         }
 
-        // Attach range filters and any other filters to bool container when present
         if ($filters !== [] && array_key_exists('bool', $body)) {
             $body['bool']['filter'] = $filters;
         }
