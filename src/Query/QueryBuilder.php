@@ -16,7 +16,7 @@ use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
 
 class QueryBuilder
 {
-    const RAW_TERM_LEVEL = 'raw';
+    public const RAW_TERM_LEVEL = 'raw';
 
     public const PAGINATION_SIZE = 15;
 
