@@ -33,7 +33,6 @@ Install the package via Composer:
 composer require lacasera/elastic-bridge
 ```
 
-
 ## Overview
 ```bash
     php artisan make:bridge HotelRoom
