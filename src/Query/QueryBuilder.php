@@ -125,13 +125,24 @@ class QueryBuilder
 
         $filters = $this->filters;
 
-        $rangeEntries = data_get($this->range, 'range', []);
-        if (is_array($rangeEntries) && $rangeEntries !== []) {
-            foreach ($rangeEntries as $field => $conditions) {
-                $filters[] = ['range' => [$field => $conditions]];
+        // Normalize range entries collected via asRange()->range(...)
+        $rangeEntries = $this->range;
+
+        // If the term is specifically 'range', build a valid range query.
+        if ($this->term === 'range' && $rangeEntries !== []) {
+            if (count($rangeEntries) === 1) {
+                // Single field range: { query: { range: { field: { ops } } } }
+                $body = ['range' => $rangeEntries];
+            } else {
+                // Multiple fields require bool/filter of separate range clauses.
+                $body = ['bool' => []];
+                foreach ($rangeEntries as $field => $conditions) {
+                    $filters[] = ['range' => [$field => $conditions]];
+                }
             }
         }
 
+        // Attach range filters and any other filters to bool container when present
         if ($filters !== [] && array_key_exists('bool', $body)) {
             $body['bool']['filter'] = $filters;
         }
@@ -298,19 +309,9 @@ class QueryBuilder
      */
     public function range(string $field, string $operator, $value): static
     {
-        $existing = data_get($this->hasPayload() ? $this->filters : $this->range, 'range.'.$field);
-
-        $payload = $existing ? array_merge($existing[$field], [$operator => $value]) : [
-            $field => [
-                $operator => $value,
-            ],
-        ];
-
-        if ($this->hasPayload()) {
-            data_set($this->filters, 'range', $payload);
-        } else {
-            data_set($this->range, 'range.'.$field, $payload);
-        }
+        // Collect range constraints by field. Supports chaining to merge ops.
+        $existing = $this->range[$field] ?? [];
+        $this->range[$field] = array_merge($existing, [$operator => $value]);
 
         return $this;
     }
