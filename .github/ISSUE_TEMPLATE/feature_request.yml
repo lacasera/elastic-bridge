@@ -1,0 +1,85 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for ElasticBridge
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Thanks for taking the time to suggest a new feature! 
+              
+              Please provide as much detail as possible to help us understand and evaluate your suggestion.
+    - type: textarea
+      id: feature-description
+      attributes:
+          label: Feature Description
+          description: A clear and concise description of the feature you'd like to see added.
+          placeholder: Add support for geo-distance queries to enable location-based searches.
+      validations:
+          required: true
+    - type: textarea
+      id: problem
+      attributes:
+          label: Problem Statement
+          description: What problem does this feature solve? Is your feature request related to a problem?
+          placeholder: I'm always frustrated when I need to search for hotels within a certain distance, but there's no built-in method for geo queries.
+      validations:
+          required: true
+    - type: textarea
+      id: proposed-solution
+      attributes:
+          label: Proposed Solution
+          description: Describe how you envision this feature working. Include code examples if possible.
+          placeholder: |
+              I would like to see a method like:
+              ```php
+              HotelRoom::asGeoDistance()
+                  ->location('location_field', ['lat' => 40.7128, 'lon' => -74.0060])
+                  ->distance('10km')
+                  ->get();
+              ```
+      validations:
+          required: true
+    - type: textarea
+      id: alternatives
+      attributes:
+          label: Alternatives Considered
+          description: Have you considered any alternative solutions or workarounds?
+          placeholder: Currently, I'm using raw queries, but it's verbose and not intuitive.
+      validations:
+          required: false
+    - type: textarea
+      id: use-case
+      attributes:
+          label: Use Case
+          description: Describe your specific use case or scenario where this feature would be helpful.
+          placeholder: I'm building a hotel booking platform where users search for accommodations near specific landmarks or addresses.
+      validations:
+          required: false
+    - type: dropdown
+      id: breaking-change
+      attributes:
+          label: Is this a breaking change?
+          description: Would implementing this feature require breaking changes to the existing API?
+          options:
+              - "No"
+              - "Yes"
+              - "Not sure"
+      validations:
+          required: true
+    - type: checkboxes
+      id: contribution
+      attributes:
+          label: Contribution
+          description: Would you be willing to contribute to implementing this feature?
+          options:
+              - label: I'm willing to submit a PR to implement this feature
+                required: false
+    - type: textarea
+      id: additional-context
+      attributes:
+          label: Additional Context
+          description: Add any other context, screenshots, or examples about the feature request.
+          placeholder: Links to Elasticsearch documentation, similar implementations in other packages, etc.
+      validations:
+          required: false

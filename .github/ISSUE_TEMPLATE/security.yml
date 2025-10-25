@@ -1,0 +1,67 @@
+name: Security Vulnerability
+description: Report a security vulnerability (Please use responsibly)
+title: "[Security]: "
+labels: ["security"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              ## ⚠️ Security Vulnerability Report
+              
+              **IMPORTANT**: If you've discovered a serious security vulnerability, please **DO NOT** report it here in a public issue.
+              
+              Instead, please report it privately by:
+              1. Going to the [Security tab](https://github.com/Lacasera/elastic-bridge/security)
+              2. Clicking "Report a vulnerability"
+              3. Following the private disclosure process
+              
+              For more information, see our [Security Policy](https://github.com/Lacasera/elastic-bridge/security/policy).
+              
+              ---
+              
+              Use this template only for:
+              - Security-related questions
+              - Clarifications about security features
+              - Non-critical security suggestions
+              
+              **Do not disclose actual vulnerabilities here.**
+    - type: dropdown
+      id: report-type
+      attributes:
+          label: Type of Report
+          description: What type of security-related issue is this?
+          options:
+              - Security Question
+              - Security Best Practice Suggestion
+              - Security Documentation Issue
+              - Other (Please explain below)
+      validations:
+          required: true
+    - type: textarea
+      id: description
+      attributes:
+          label: Description
+          description: Describe your security-related question or suggestion (DO NOT include actual vulnerability details)
+          placeholder: I have a question about how ElasticBridge handles authentication tokens...
+      validations:
+          required: true
+    - type: textarea
+      id: context
+      attributes:
+          label: Context
+          description: Provide any additional context that might be helpful
+          placeholder: I'm implementing a multi-tenant application and want to ensure data isolation...
+      validations:
+          required: false
+    - type: checkboxes
+      id: acknowledgments
+      attributes:
+          label: Acknowledgments
+          description: Please confirm the following
+          options:
+              - label: This is NOT a report of an actual security vulnerability
+                required: true
+              - label: I understand that actual vulnerabilities should be reported privately through GitHub Security Advisories
+                required: true
+              - label: I have read the project's [Security Policy](https://github.com/Lacasera/elastic-bridge/security/policy)
+                required: true

@@ -25,8 +25,8 @@ class PaginationLinksTest extends TestCase
 
         $links = $results->links();
 
-        $this->assertEquals($results->first()->toArray()['sort'], $links['previous']);
-        $this->assertEquals($results->last()->toArray()['sort'], $links['next']);
+        $this->assertEquals($results->first()->getRawAttributes()['sort'], $links['previous']);
+        $this->assertEquals($results->last()->getRawAttributes()['sort'], $links['next']);
         $this->assertEquals($results->first()->getMeta()['value'], $links['total']);
     }
 }

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge;
 
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
 use JsonException;
+use JsonSerializable;
 use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\Concerns\FakeBridge;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
@@ -15,11 +18,12 @@ use Lacasera\ElasticBridge\Concerns\HasCollection;
 use Lacasera\ElasticBridge\DTO\Bucket;
 use Lacasera\ElasticBridge\DTO\Stats;
 use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
+use Override;
 
 /**
  * @property-read string|int|null $id
  */
-abstract class ElasticBridge
+abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
 {
     use FakeBridge;
     use ForwardsCalls;
@@ -63,9 +67,9 @@ abstract class ElasticBridge
      */
     public static function __callStatic($method, $parameters)
     {
-        $static = (new static); // ->$method(...$parameters);
+        $static = (new static);
 
-        return $static->forwardCallTo($static->newBridgeQuery(), $method, $parameters); // $this->forwardCallTo($this->newBridgeQuery(), $method, $parameters);
+        return $static->forwardCallTo($static->newBridgeQuery(), $method, $parameters);
     }
 
     public function newInstance(array $attributes = [], bool $exists = true): ElasticBridge
@@ -112,11 +116,18 @@ abstract class ElasticBridge
     }
 
     /**
+     * Get all records with cursor pagination using match_all query.
+     *
+     * @param  int  $perPage  Number of records per page (default: 15)
      * @return mixed
      */
-    public static function all($columns = ['*'])
+    public static function all(int $perPage = 15)
     {
-        return static::query()->all($columns);
+        return static::query()
+            ->asBoolean()
+            ->matchAll()
+            ->cursorPaginate($perPage)
+            ->get();
     }
 
     /**
@@ -152,6 +163,7 @@ abstract class ElasticBridge
      *
      * @throws ErrorEncodingJson
      */
+    #[Override]
     public function toJson($options = 0)
     {
         try {
@@ -163,20 +175,33 @@ abstract class ElasticBridge
         return $json;
     }
 
+    #[Override]
     public function jsonSerialize(): array
     {
         return $this->toArray();
     }
 
+    #[Override]
     public function toArray(): array
     {
         return $this->attributesToArray();
     }
 
     /**
+     * Get the instance as an array.
+     * Returns only the _source data for clean JSON responses.
+     *
      * @return array
      */
     public function attributesToArray()
+    {
+        return $this->attributes['_source'] ?? $this->attributes;
+    }
+
+    /**
+     * Get all raw attributes including Elasticsearch metadata (_id, _index, _score, etc.)
+     */
+    public function getRawAttributes(): array
     {
         return $this->attributes;
     }
