@@ -57,6 +57,15 @@ jobs:
           # Framework + Carbon per matrix; keep Testbench in dev
           composer require "laravel/framework:${{ matrix.laravel }}" "nesbot/carbon:${{ matrix.os == 'windows-latest' && '^^^' || '' }}${{ matrix.carbon }}" --no-interaction --no-update
           composer require --dev "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          # Larastan v2 doesn't support Illuminate 12; use v3 on L12
+          if [[ "${{ matrix.laravel }}" == "12.*" ]]; then \
+            composer require --dev \
+              larastan/larastan:^3.0 \
+              phpstan/phpstan:^2.1 \
+              phpstan/phpstan-deprecation-rules:^2.0 \
+              phpstan/phpstan-phpunit:^2.0 \
+              --no-interaction --no-update; \
+          fi
           # Laravel 12 requires PHPUnit >= 11.5.3
           if [[ "${{ matrix.laravel }}" == "12.*" ]]; then \
             composer require --dev phpunit/phpunit:^11.5.3 --no-interaction --no-update; \
