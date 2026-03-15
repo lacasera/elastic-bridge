@@ -99,7 +99,7 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
             $this->setAggregateMarco($items['aggregations']);
         }
 
-        $collection = $elasticBridge->newCollection(array_map(fn ($item): \Lacasera\ElasticBridge\ElasticBridge => $elasticBridge->newFromBuilder($item, $meta), $items['hits']['hits']));
+        $collection = $elasticBridge->newCollection(array_map(fn ($item): ElasticBridge => $elasticBridge->newFromBuilder($item, $meta), $items['hits']['hits']));
 
         static::$collectionClass = $originalCollectionClass;
 
