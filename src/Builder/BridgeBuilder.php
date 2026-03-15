@@ -15,12 +15,14 @@ use Lacasera\ElasticBridge\Concerns\HasAggregates;
 use Lacasera\ElasticBridge\Concerns\SetsTerm;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
+use Lacasera\ElasticBridge\Query\Traits\HasAggregations;
 use Lacasera\ElasticBridge\Query\Traits\HasFilters;
 
 class BridgeBuilder implements BridgeBuilderInterface
 {
     use ForwardsCalls;
     use HasAggregates;
+    use HasAggregations;
     use HasFilters;
     use SetsTerm;
 
@@ -50,6 +52,14 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this->bridge;
     }
 
+    /**
+     * Get the query builder instance
+     */
+    public function getQueryBuilder(): QueryBuilder
+    {
+        return $this->query;
+    }
+
     public function all(array $columns = ['*']): mixed
     {
         return $this->asBoolean()
@@ -76,6 +86,16 @@ class BridgeBuilder implements BridgeBuilderInterface
         $this->query->setPagination(['size' => $size]);
 
         return $this;
+    }
+
+    /**
+     * Set the number of results to return (alias for take)
+     *
+     * @return $this
+     */
+    public function size(int $size): static
+    {
+        return $this->take($size);
     }
 
     /**

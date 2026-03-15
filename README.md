@@ -5,17 +5,17 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/lacasera/elastic-bridge/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/lacasera/elastic-bridge/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/lacasera/elastic-bridge.svg?style=flat-square)](https://packagist.org/packages/lacasera/elastic-bridge)
 
-ElasticBridge allows you to write `Fluent`, `Eloquent` like Elasticsearch queries in your laravel application.
+ElasticBridge allows you to write `Fluent`, `Eloquent` like search queries in your Laravel application.
 
-With ElasticBridge, you can interact with Elasticsearch indexes as easily as you would with traditional Eloquent models, bringing the power of Elasticsearch into the Laravel ecosystem with no effort.
+With ElasticBridge, you can interact with Elasticsearch and OpenSearch indexes as easily as you would with traditional Eloquent models, bringing the power of search engines into the Laravel ecosystem with no effort.
 
-This package simplifies the complexity of Elasticsearch queries, allowing you to execute powerful search operations while maintaining the elegance and familiarity of Laravel's syntax.
+This package simplifies the complexity of search queries, allowing you to execute powerful search operations while maintaining the elegance and familiarity of Laravel's syntax.
 
 ## Requirements
 
 - PHP 8.2 or 8.3
 - Laravel 10.x, 11.x, or 12.x
-- Elasticsearch 8.x
+- Elasticsearch 8.x or OpenSearch 2.x
 
 ## Compatibility Matrix
 
@@ -31,6 +31,60 @@ Install the package via Composer:
 
 ```bash
 composer require lacasera/elastic-bridge
+```
+
+For OpenSearch support, also install the OpenSearch PHP client:
+
+```bash
+composer require opensearch-project/opensearch-php
+```
+
+## Configuration
+
+Publish the configuration file (optional):
+
+```bash
+php artisan vendor:publish --tag=elasticbridge-config
+```
+
+### Environment Variables
+
+#### For Elasticsearch (default):
+```env
+SEARCH_DRIVER=elasticsearch
+ELASTICSEARCH_HOST=localhost:9200
+ELASTICSEARCH_USERNAME=elastic  
+ELASTICSEARCH_PASSWORD=your_password
+```
+
+#### For OpenSearch:
+```env
+SEARCH_DRIVER=opensearch
+OPENSEARCH_HOST=localhost:9200
+OPENSEARCH_USERNAME=admin
+OPENSEARCH_PASSWORD=your_password
+```
+
+### Authentication Methods
+
+#### Basic Authentication (default):
+```env
+SEARCH_AUTH_METHOD=basic
+SEARCH_USERNAME=your_username
+SEARCH_PASSWORD=your_password
+```
+
+#### API Key Authentication (Elasticsearch only):
+```env
+SEARCH_AUTH_METHOD=api_key
+SEARCH_API_KEY_ID=your_key_id
+SEARCH_API_KEY=your_api_key
+```
+
+### SSL Configuration
+```env
+SEARCH_SSL_VERIFY=true
+SEARCH_SSL_CA_BUNDLE=/path/to/ca-bundle.pem
 ```
 
 ## Overview
@@ -67,18 +121,45 @@ class SearchController extends  Controller
     {
         $rooms = HotelRoom::asBoolean()
             ->matchAll()
-            ->orderBy('price', 'DESC'),
+            ->orderBy('price', 'DESC')
             ->filterByTerm('code', 'usd')
             ->filterByRange('price', 20, 'gte')
             ->filterByRange('price', 500, 'lte')
             ->cursorPaginate(50)
             ->get(['price']);
             
-            
         return response()->json([
             'data' => $rooms
         ]);
     }
+}
+```
+
+## Advanced Features
+
+### Fluent Aggregations
+ElasticBridge now supports complex aggregations with a fluent, readable API:
+
+```php
+<?php
+// Complex date histogram with nested aggregations
+$results = HotelRoom::query()
+    ->asBoolean()
+    ->filterByTerm('status', 'available')
+    ->size(0)
+    ->dateHistogram('bookings_over_time', 'created_at', '1d')
+        ->avg('avg_price', 'price')
+        ->sum('total_revenue', 'price') 
+        ->terms('room_types', 'type', 5)
+        ->end()
+    ->get();
+
+// Access aggregation results
+$dailyBookings = $results->bookingsOverTime();
+foreach ($dailyBookings['buckets'] as $bucket) {
+    echo "Date: {$bucket['key_as_string']}\n";
+    echo "Average Price: {$bucket['avg_price']['value']}\n";
+    echo "Total Revenue: {$bucket['total_revenue']['value']}\n";
 }
 ```
 

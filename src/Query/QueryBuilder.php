@@ -10,7 +10,7 @@ use Elastic\Elasticsearch\Exception\MissingParameterException;
 use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Lacasera\ElasticBridge\Connection\ConnectionInterface;
+use Lacasera\ElasticBridge\Contracts\SearchConnectionInterface;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
 
@@ -39,9 +39,11 @@ class QueryBuilder
 
     protected string $type = 'query';
 
-    public function __construct(public ConnectionInterface $connection) {}
+    protected ?string $lastAggregationName = null;
 
-    public function getConnection(): ConnectionInterface
+    public function __construct(public SearchConnectionInterface $connection) {}
+
+    public function getConnection(): SearchConnectionInterface
     {
         return $this->connection;
     }
@@ -85,7 +87,7 @@ class QueryBuilder
 
     /**
      * @return mixed
-     *
+    /**
      * @throws MissingTermLevelQuery
      * @throws ClientResponseException
      * @throws ServerResponseException
@@ -94,13 +96,13 @@ class QueryBuilder
     {
         $payload = $this->hasPayload() ? $this->getPayload() : $this->defaultPayload();
 
-        return $this->getConnection()
-            ->getClient()
+        $result = $this->getConnection()
             ->count([
                 'index' => $index,
                 'body' => $payload,
-            ])
-            ->asArray()['count'];
+            ]);
+
+        return $result['count'];
     }
 
     /**
@@ -179,6 +181,49 @@ class QueryBuilder
     public function setAggregate(array $payload): self
     {
         $this->aggregates = $payload;
+
+        return $this;
+    }
+
+    /**
+     * Add an aggregation to the query
+     *
+     * @return $this
+     */
+    public function addAggregation(string $name, array $aggregation): self
+    {
+        $this->aggregates[$name] = $aggregation;
+        $this->lastAggregationName = $name;
+
+        return $this;
+    }
+
+    /**
+     * Add a sub-aggregation to the last added aggregation
+     *
+     * @return $this
+     */
+    public function addSubAggregation(string $name, array $aggregation): self
+    {
+        if ($this->lastAggregationName) {
+            if (! isset($this->aggregates[$this->lastAggregationName]['aggs'])) {
+                $this->aggregates[$this->lastAggregationName]['aggs'] = [];
+            }
+            $this->aggregates[$this->lastAggregationName]['aggs'][$name] = $aggregation;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Clear all aggregations
+     *
+     * @return $this
+     */
+    public function clearAggregations(): self
+    {
+        $this->aggregates = [];
+        $this->lastAggregationName = null;
 
         return $this;
     }
@@ -275,11 +320,10 @@ class QueryBuilder
     public function makeRequest(string $index, $columns = ['*']): array
     {
         return $this->getConnection()
-            ->getClient()
             ->search([
                 'index' => $index,
                 'body' => $this->getPayload($columns),
-            ])->asArray();
+            ]);
     }
 
     /**
@@ -324,7 +368,9 @@ class QueryBuilder
             'body' => $body,
         ];
 
-        return $this->getConnection()->getClient()->update($query)->asBool();
+        $result = $this->getConnection()->update($query);
+
+        return isset($result['_shards']['successful']) && $result['_shards']['successful'] > 0;
     }
 
     /**
@@ -336,18 +382,13 @@ class QueryBuilder
     protected function searchRequest(array $body)
     {
         return $this->getConnection()
-            ->getClient()
-            ->search($body)
-            ->asArray();
+            ->search($body);
     }
 
     public function indexRequest(array $body, bool $asArray = true)
     {
-        $result = $this->getConnection()
-            ->getClient()
+        return $this->getConnection()
             ->index($body);
-
-        return $asArray ? $result->asArray() : $result->asBool();
     }
 
     private function isSelectingFields(Collection $columns): bool

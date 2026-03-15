@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Connection;
 
-use Elastic\Elasticsearch\Client;
-use Elastic\Elasticsearch\ClientBuilder;
-use Elastic\Elasticsearch\Exception\AuthenticationException;
 use Lacasera\ElasticBridge\Exceptions\MissingEnvException;
+use OpenSearch\Client;
+use OpenSearch\ClientBuilder;
 
-class ElasticConnection extends AbstractSearchConnection
+class OpenSearchConnection extends AbstractSearchConnection
 {
-    /**
-     * @throws AuthenticationException
-     */
     protected function createClient(): Client
     {
         $verifySsl = $this->config['verify_ssl'] ?? false;
@@ -32,15 +28,9 @@ class ElasticConnection extends AbstractSearchConnection
 
         $authMethod = $this->config['auth_method'] ?? 'basic-auth';
 
-        if ($authMethod === 'api-key') {
-            $apiKey = $this->config['api_key'] ?? null;
-
-            if (empty($apiKey)) {
-                throw new MissingEnvException('missing value for SEARCH_API_KEY env');
-            }
-
-            $clientBuilder->setApiKey($apiKey);
-        } else {
+        // For now, OpenSearch connection supports basic authentication
+        // API key support can be added later based on OpenSearch documentation
+        if ($authMethod === 'basic-auth') {
             $username = $this->config['username'] ?? null;
             $password = $this->config['password'] ?? null;
 
@@ -54,35 +44,27 @@ class ElasticConnection extends AbstractSearchConnection
 
     public function search(array $params): array
     {
-        $response = $this->client->search($params);
-
-        return $response->asArray();
+        return $this->client->search($params);
     }
 
     public function index(array $params): array
     {
-        $response = $this->client->index($params);
-
-        return $response->asArray();
+        return $this->client->index($params);
     }
 
     public function get(array $params): array
     {
-        $response = $this->client->get($params);
-
-        return $response->asArray();
+        return $this->client->get($params);
     }
 
     public function delete(array $params): array
     {
-        $response = $this->client->delete($params);
-
-        return $response->asArray();
+        return $this->client->delete($params);
     }
 
     public function indexExists(string $index): bool
     {
-        return $this->client->indices()->exists(['index' => $index])->asBool();
+        return $this->client->indices()->exists(['index' => $index]);
     }
 
     public function createIndex(string $index, array $body = []): array
@@ -92,43 +74,31 @@ class ElasticConnection extends AbstractSearchConnection
             $params['body'] = $body;
         }
 
-        $response = $this->client->indices()->create($params);
-
-        return $response->asArray();
+        return $this->client->indices()->create($params);
     }
 
     public function deleteIndex(string $index): array
     {
-        $response = $this->client->indices()->delete(['index' => $index]);
-
-        return $response->asArray();
+        return $this->client->indices()->delete(['index' => $index]);
     }
 
     public function info(): array
     {
-        $response = $this->client->info();
-
-        return $response->asArray();
+        return $this->client->info();
     }
 
     public function bulk(array $params): array
     {
-        $response = $this->client->bulk($params);
-
-        return $response->asArray();
+        return $this->client->bulk($params);
     }
 
     public function count(array $params): array
     {
-        $response = $this->client->count($params);
-
-        return $response->asArray();
+        return $this->client->count($params);
     }
 
     public function update(array $params): array
     {
-        $response = $this->client->update($params);
-
-        return $response->asArray();
+        return $this->client->update($params);
     }
 }

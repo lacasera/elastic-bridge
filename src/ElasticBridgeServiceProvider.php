@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Lacasera\ElasticBridge;
 
 use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;
+use Lacasera\ElasticBridge\Connection\ConnectionFactory;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
-use Lacasera\ElasticBridge\Connection\ElasticConnection;
+use Lacasera\ElasticBridge\Contracts\SearchConnectionInterface;
 use Override;
 use Spatie\LaravelPackageTools\Exceptions\InvalidPackage;
 use Spatie\LaravelPackageTools\Package;
@@ -34,6 +35,14 @@ class ElasticBridgeServiceProvider extends PackageServiceProvider
     {
         parent::register();
 
-        $this->app->bind(ConnectionInterface::class, ElasticConnection::class);
+        // Register the search connection using factory
+        $this->app->singleton(SearchConnectionInterface::class, function ($app) {
+            $config = $app['config']['elasticbridge'];
+
+            return ConnectionFactory::make($config);
+        });
+
+        // Keep backward compatibility
+        $this->app->bind(ConnectionInterface::class, SearchConnectionInterface::class);
     }
 }

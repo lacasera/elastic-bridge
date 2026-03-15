@@ -13,19 +13,31 @@ use ReflectionClass;
 
 class ElasticConnectionTest extends TestCase
 {
-    private function makeConnection(): ElasticConnection
+    private function makeConnection(array $config = []): ElasticConnection
     {
-        return new ElasticConnection;
+        $defaultConfig = [
+            'driver' => 'elasticsearch',
+            'auth_method' => 'basic-auth',
+            'host' => ['https://localhost:9200'],
+            'username' => 'elastic',
+            'password' => 'secret',
+            'verify_ssl' => false,
+            'certificate' => null,
+            'api_key' => null,
+        ];
+
+        return new ElasticConnection(array_merge($defaultConfig, $config));
     }
 
     #[Test]
     public function it_uses_basic_auth_when_configured(): void
     {
-        config()->set('elasticbridge.auth_method', 'basic-auth');
-        config()->set('elasticbridge.username', 'elastic');
-        config()->set('elasticbridge.password', 'secret');
+        $elasticConnection = $this->makeConnection([
+            'auth_method' => 'basic-auth',
+            'username' => 'elastic',
+            'password' => 'secret',
+        ]);
 
-        $elasticConnection = $this->makeConnection();
         $client = $elasticConnection->getClient();
         $transport = $client->getTransport();
 
@@ -47,11 +59,12 @@ class ElasticConnectionTest extends TestCase
     #[Test]
     public function it_does_not_set_basic_auth_when_password_is_missing(): void
     {
-        config()->set('elasticbridge.auth_method', 'basic-auth');
-        config()->set('elasticbridge.username', 'elastic');
-        config()->set('elasticbridge.password', null);
+        $elasticConnection = $this->makeConnection([
+            'auth_method' => 'basic-auth',
+            'username' => 'elastic',
+            'password' => null,
+        ]);
 
-        $elasticConnection = $this->makeConnection();
         $transport = $elasticConnection->getClient()->getTransport();
 
         // No Authorization header and no initialized user/password properties
@@ -71,13 +84,14 @@ class ElasticConnectionTest extends TestCase
     #[Test]
     public function it_uses_api_key_token_when_configured(): void
     {
-        config()->set('elasticbridge.auth_method', 'api-key');
-        config()->set('elasticbridge.api_key', 'abc123');
-        // Ensure basic credentials don't interfere
-        config()->set('elasticbridge.username', null);
-        config()->set('elasticbridge.password', null);
+        $elasticConnection = $this->makeConnection([
+            'auth_method' => 'api-key',
+            'api_key' => 'abc123',
+            'username' => null,
+            'password' => null,
+        ]);
 
-        $transport = $this->makeConnection()->getClient()->getTransport();
+        $transport = $elasticConnection->getClient()->getTransport();
 
         $headers = $transport->getHeaders();
         $this->assertArrayHasKey('Authorization', $headers);
@@ -88,34 +102,35 @@ class ElasticConnectionTest extends TestCase
     public function it_requires_api_key_when_auth_method_is_api_key(): void
     {
         $this->expectException(MissingEnvException::class);
-        $this->expectExceptionMessage('missing value for ELASTICSEARCH_API_KEY env');
-
-        config()->set('elasticbridge.auth_method', 'api-key');
-        config()->set('elasticbridge.api_key', null);
+        $this->expectExceptionMessage('missing value for SEARCH_API_KEY env');
 
         // Will throw during construction
-        $this->makeConnection();
+        $this->makeConnection([
+            'auth_method' => 'api-key',
+            'api_key' => null,
+        ]);
     }
 
     #[Test]
     public function it_requires_certificate_when_verify_ssl_is_true_and_certificate_missing(): void
     {
         $this->expectException(MissingEnvException::class);
-        $this->expectExceptionMessage('ELASTICSEARCH_SSL_CERT is required if verify_ssl is true');
+        $this->expectExceptionMessage('SEARCH_SSL_CERT is required if verify_ssl is true');
 
-        config()->set('elasticbridge.verify_ssl', true);
-        config()->set('elasticbridge.certificate', null);
-
-        $this->makeConnection();
+        $this->makeConnection([
+            'verify_ssl' => true,
+            'certificate' => null,
+        ]);
     }
 
     #[Test]
     public function it_allows_custom_certificate_when_verify_ssl_is_true(): void
     {
-        config()->set('elasticbridge.verify_ssl', true);
-        config()->set('elasticbridge.certificate', '/tmp/http_ca.crt');
+        $elasticConnection = $this->makeConnection([
+            'verify_ssl' => true,
+            'certificate' => '/tmp/http_ca.crt',
+        ]);
 
-        $elasticConnection = $this->makeConnection();
         $this->assertNotNull($elasticConnection->getClient());
     }
 }

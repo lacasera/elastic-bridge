@@ -1,52 +1,48 @@
 <?php
 
-/**
- * for more information visit
- * https://www.elastic.co/guide/en/elasticsearch/reference/current/run-elasticsearch-locally.html
- */
 return [
 
+    'driver' => env('SEARCH_DRIVER', 'elasticsearch'),
+
     /**
-     * Authentication method for Elasticsearch client
+     * Authentication method for search client
      * Supported: basic-auth, api-key
      */
-    'auth_method' => env('ELASTICSEARCH_AUTH_METHOD', 'basic-auth'),
+    'auth_method' => env('SEARCH_AUTH_METHOD', 'basic-auth'),
 
     /**
-     * elastic host
+     * Search engine host(s)
      */
-    'host' => [env('ELASTICSEARCH_HOST', 'https://localhost:9200')],
+    'host' => [env('SEARCH_HOST', 'https://localhost:9200')],
 
     /**
-     * elastic username
+     * Search engine username
      */
-    'username' => env('ELASTICSEARCH_USERNAME', 'elastic'),
+    'username' => env('SEARCH_USERNAME', 'elastic'),
 
     /**
-     * elastic password
+     * Search engine password
      */
-    'password' => env('ELASTICSEARCH_PASSWORD', null),
+    'password' => env('SEARCH_PASSWORD', 'secret'),
 
     /**
-     * API key auth
-     * When using auth_method => 'api-key', set either:
+     * API key authentication
+     * When using auth_method => 'api-key'
      */
-    'api_key' => env('ELASTICSEARCH_API_KEY', null),
+    'api_key' => env('SEARCH_API_KEY', null),
 
     /**
-     * Should elastic verify ssl certificate during connection
-     * ELASTICSEARCH_SSL_CERT is required if set to true
+     * SSL certificate verification
      */
-    'verify_ssl' => env('ELASTICSEARCH_VERIFY_SSL', false),
+    'verify_ssl' => env('SEARCH_VERIFY_SSL', false),
 
     /**
-     * path to certificate file generated when installing elastic
-     * https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html#_use_the_ca_certificate
+     * Path to SSL certificate file
      */
-    'certificate' => env('ELASTICSEARCH_SSL_CERT', null),
+    'certificate' => env('SEARCH_SSL_CERT', null),
 
     /**
-     * where should bridge files be located
+     * Bridge files namespace
      */
-    'namespace' => 'App\\Bridges',
+    'namespace' => env('SEARCH_BRIDGE_NAMESPACE', 'App\\Bridges'),
 ];
