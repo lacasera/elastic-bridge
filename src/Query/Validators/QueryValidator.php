@@ -17,6 +17,12 @@ class QueryValidator
             ->append('Validator')
             ->value();
 
+        // Only validate terms that have a dedicated validator. Terms without
+        // one (ids, fuzzy, raw, range, ...) are passed through untouched.
+        if (! class_exists($classname)) {
+            return;
+        }
+
         (new $classname)->handle($payload);
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Query\Traits;
 
+use Lacasera\ElasticBridge\Enums\RangeOperator;
+use Lacasera\ElasticBridge\Exceptions\InvalidQuery;
+
 trait HasFilters
 {
     /**
@@ -21,6 +24,12 @@ trait HasFilters
      */
     public function filterByRange(string $field, $value, $operator)
     {
+        if (! RangeOperator::isValid((string) $operator)) {
+            throw new InvalidQuery(
+                sprintf('invalid range operator [%s]. allowed: %s.', $operator, implode(', ', RangeOperator::values()))
+            );
+        }
+
         $this->query->setFilter('range', $field, $value, $operator);
 
         return $this;

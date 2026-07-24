@@ -12,7 +12,10 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 use Lacasera\ElasticBridge\ElasticBridge;
+use Lacasera\ElasticBridge\Enums\RangeOperator;
+use Lacasera\ElasticBridge\Exceptions\InvalidQuery;
 use Lacasera\ElasticBridge\Exceptions\MissingTermLevelQuery;
+use Lacasera\ElasticBridge\Query\Validators\QueryValidator;
 
 class QueryBuilder
 {
@@ -141,6 +144,8 @@ class QueryBuilder
         if ($filters !== [] && array_key_exists('bool', $body)) {
             $body['bool']['filter'] = $filters;
         }
+
+        $this->validateQuery($body);
 
         $payload = [$this->type => $body];
 
@@ -304,6 +309,12 @@ class QueryBuilder
      */
     public function range(string $field, string $operator, $value): static
     {
+        if (! RangeOperator::isValid($operator)) {
+            throw new InvalidQuery(
+                sprintf('invalid range operator [%s]. allowed: %s.', $operator, implode(', ', RangeOperator::values()))
+            );
+        }
+
         // Collect range constraints by field. Supports chaining to merge ops.
         $existing = $this->range[$field] ?? [];
         $this->range[$field] = array_merge($existing, [$operator => $value]);
@@ -381,5 +392,19 @@ class QueryBuilder
     private function shouldAttachAggregate(): bool
     {
         return $this->aggregates !== [];
+    }
+
+    /**
+     * Run the term-level validator (if one exists) against the assembled body.
+     */
+    private function validateQuery(array $body): void
+    {
+        if ($this->term === null || $this->term === self::RAW_TERM_LEVEL) {
+            return;
+        }
+
+        (new QueryValidator)->validate($this->term, [
+            'body' => [$this->type => $body],
+        ]);
     }
 }

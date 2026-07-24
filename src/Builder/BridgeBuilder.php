@@ -14,6 +14,8 @@ use Illuminate\Support\Traits\ForwardsCalls;
 use Lacasera\ElasticBridge\Concerns\HasAggregates;
 use Lacasera\ElasticBridge\Concerns\SetsTerm;
 use Lacasera\ElasticBridge\ElasticBridge;
+use Lacasera\ElasticBridge\Enums\OrderOperator;
+use Lacasera\ElasticBridge\Exceptions\InvalidQuery;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
 use Lacasera\ElasticBridge\Query\Traits\HasFilters;
 
@@ -50,11 +52,18 @@ class BridgeBuilder implements BridgeBuilderInterface
         return $this->bridge;
     }
 
-    public function all(array $columns = ['*']): mixed
+    /**
+     * Fetch a bounded first page of records using a match_all query.
+     *
+     * This intentionally does NOT request every document — passing the full
+     * index count as the page size would exceed Elasticsearch's default
+     * `max_result_window` (10,000) on any real index.
+     */
+    public function all(int $perPage = QueryBuilder::PAGINATION_SIZE, array $columns = ['*']): mixed
     {
         return $this->asBoolean()
-            ->shouldMatchAll()
-            ->cursorPaginate($this->count())
+            ->matchAll()
+            ->cursorPaginate($perPage)
             ->get($columns);
     }
 
@@ -342,9 +351,17 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function orderBy(string $field, string $direction = 'ASC'): self
     {
+        $normalized = strtolower($direction);
+
+        if (! OrderOperator::isValid($normalized)) {
+            throw new InvalidQuery(
+                sprintf('invalid order direction [%s]. allowed: %s.', $direction, implode(', ', OrderOperator::values()))
+            );
+        }
+
         $this->query->setSort([
             $field => [
-                'order' => strtolower($direction),
+                'order' => $normalized,
             ],
         ]);
 
@@ -428,7 +445,9 @@ class BridgeBuilder implements BridgeBuilderInterface
     {
         $id = $this->bridge->id;
 
-        $res = $this->find($id);
+        // Run the existence check on an isolated builder so this builder's
+        // query state (term, values) is not mutated by find().
+        $res = $this->bridge->newBridgeQuery()->find($id);
 
         if (! $res) {
             $id = $this->create($this->bridge->attributesToArray()['_source']);

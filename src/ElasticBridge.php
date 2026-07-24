@@ -95,11 +95,11 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
 
         $meta = $items['hits']['total'];
 
-        if (isset($items['aggregations'])) {
-            $this->setAggregateMarco($items['aggregations']);
-        }
+        $collection = $elasticBridge->newCollection(array_map(fn ($item): ElasticBridge => $elasticBridge->newFromBuilder($item, $meta), $items['hits']['hits']));
 
-        $collection = $elasticBridge->newCollection(array_map(fn ($item): \Lacasera\ElasticBridge\ElasticBridge => $elasticBridge->newFromBuilder($item, $meta), $items['hits']['hits']));
+        if (isset($items['aggregations'])) {
+            $collection->setAggregations($this->resolveAggregations($items['aggregations']));
+        }
 
         static::$collectionClass = $originalCollectionClass;
 
@@ -123,11 +123,7 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
      */
     public static function all(int $perPage = 15)
     {
-        return static::query()
-            ->asBoolean()
-            ->matchAll()
-            ->cursorPaginate($perPage)
-            ->get();
+        return static::query()->all($perPage);
     }
 
     /**
@@ -206,15 +202,21 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
         return $this->attributes;
     }
 
-    protected function setAggregateMarco(array $aggregations): void
+    /**
+     * Resolve every aggregation in the response into a name => result map,
+     * keyed by the camel-cased aggregation name for instance-scoped lookup.
+     *
+     * @return array<string, mixed>
+     */
+    protected function resolveAggregations(array $aggregations): array
     {
-        $key = (string) Arr::first(array_keys($aggregations));
+        $resolved = [];
 
-        $name = Str::camel($key);
+        foreach (array_keys($aggregations) as $key) {
+            $resolved[Str::camel((string) $key)] = $this->resolveAggregationResults($aggregations, (string) $key);
+        }
 
-        $results = $this->resolveAggregationResults($aggregations, $key);
-
-        Collection::macro($name, fn () => $results);
+        return $resolved;
     }
 
     /**

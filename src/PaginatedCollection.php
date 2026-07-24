@@ -22,6 +22,10 @@ class PaginatedCollection extends Collection
      */
     public function total()
     {
+        if ($this->isEmpty()) {
+            return 0;
+        }
+
         return data_get($this->first()->getMeta(), 'value');
     }
 
@@ -30,6 +34,10 @@ class PaginatedCollection extends Collection
      */
     public function previousSort()
     {
+        if ($this->isEmpty()) {
+            return [];
+        }
+
         return data_get($this->first()->getRawAttributes(), 'sort');
     }
 
@@ -38,6 +46,10 @@ class PaginatedCollection extends Collection
      */
     public function nextSort()
     {
+        if ($this->isEmpty()) {
+            return [];
+        }
+
         return data_get($this->last()->getRawAttributes(), 'sort');
     }
 }

@@ -7,7 +7,7 @@ namespace Lacasera\ElasticBridge\Query\Validators;
 use Lacasera\ElasticBridge\Exceptions\InvalidQuery;
 use Override;
 
-class MatchValidator implements ValidatorInterface
+class TermsSetValidator implements ValidatorInterface
 {
     /**
      * @throws InvalidQuery
@@ -15,10 +15,10 @@ class MatchValidator implements ValidatorInterface
     #[Override]
     public function handle(array $payload): void
     {
-        $match = data_get($payload, 'body.query.match');
+        $termsSet = data_get($payload, 'body.query.terms_set');
 
-        if (! is_array($match) || $match === []) {
-            throw new InvalidQuery('match query must target at least one field.');
+        if (! is_array($termsSet) || $termsSet === []) {
+            throw new InvalidQuery('terms_set query must target at least one field.');
         }
     }
 }

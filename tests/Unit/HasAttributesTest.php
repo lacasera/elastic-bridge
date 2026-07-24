@@ -61,4 +61,18 @@ class HasAttributesTest extends TestCase
         $this->assertSame(1.11, $room->hotel->location->lat);
         $this->assertSame(2.22, $room->hotel->location->lon);
     }
+
+    #[Test]
+    public function it_returns_null_when_source_is_absent(): void
+    {
+        $room = new Room;
+        $room->setRawAttributes([
+            '_id' => 'no-source',
+            '_score' => 1.0,
+        ]);
+
+        // Must not throw an undefined-index error when _source is missing.
+        $this->assertNull($room->price);
+        $this->assertSame('no-source', $room->id);
+    }
 }

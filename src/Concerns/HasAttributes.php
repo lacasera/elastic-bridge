@@ -31,13 +31,13 @@ trait HasAttributes
     /**
      * @return array|mixed
      */
-    public function getAttribute($key)
+    public function getAttribute(string $key)
     {
-        if ($key == 'id' && ! array_key_exists('id', $this->attributes)) {
+        if ($key === 'id' && ! array_key_exists('id', $this->attributes)) {
             return data_get($this->attributes, '_id') ?? data_get($this->attributes, '_source.id');
         }
 
-        $value = data_get($this->attributes['_source'], $key);
+        $value = data_get($this->attributes, '_source.'.$key);
 
         if (is_array($value)) {
             return json_decode(json_encode($value), false);

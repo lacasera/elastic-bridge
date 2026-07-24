@@ -15,13 +15,21 @@ class BoolValidator implements ValidatorInterface
     #[Override]
     public function handle(array $payload): void
     {
-        $required = ['should', 'must'];
+        $allowed = ['must', 'should', 'must_not', 'filter', 'minimum_should_match', 'boost'];
 
-        $keys = data_get($payload, 'body.query.bool');
+        $clauses = data_get($payload, 'body.query.bool');
 
-        if (array_diff(array_keys($keys), $required) !== []) {
+        if (! is_array($clauses) || $clauses === []) {
             throw new InvalidQuery(
-                'boolean term level must have a must or should clause. consider using boolean query method'
+                'boolean query must contain at least one clause (must, should, must_not or filter).'
+            );
+        }
+
+        $invalid = array_diff(array_keys($clauses), $allowed);
+
+        if ($invalid !== []) {
+            throw new InvalidQuery(
+                'invalid boolean clause(s): '.implode(', ', $invalid).'. allowed: '.implode(', ', $allowed).'.'
             );
         }
     }
