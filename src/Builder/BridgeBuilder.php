@@ -264,9 +264,15 @@ class BridgeBuilder implements BridgeBuilderInterface
             $field = [$field];
         }
 
-        $this->query->setPayload('multi_match', [
-            'query' => $query,
-            'fields' => $field,
+        // multi_match has no term-level of its own; nest it as a bool must
+        // clause so it composes into valid DSL.
+        $this->asBoolean();
+
+        $this->query->setPayload('must', [
+            'multi_match' => [
+                'query' => $query,
+                'fields' => $field,
+            ],
         ]);
 
         return $this;
@@ -277,10 +283,16 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function matchPhrase(string $field, string $query, array $options = []): self
     {
-        $this->query->setPayload('match_phrase', [
-            $field => [
-                'query' => $query,
-                ...$options,
+        // match_phrase has no term-level of its own; nest it as a bool must
+        // clause so it composes into valid DSL.
+        $this->asBoolean();
+
+        $this->query->setPayload('must', [
+            'match_phrase' => [
+                $field => [
+                    'query' => $query,
+                    ...$options,
+                ],
             ],
         ]);
 

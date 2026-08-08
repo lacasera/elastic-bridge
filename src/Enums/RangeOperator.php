@@ -16,8 +16,4 @@ enum RangeOperator: string
     case GTE = 'gte';
     case LT = 'lt';
     case LTE = 'lte';
-
-    case FROM = 'from';
-
-    case TO = 'to';
 }

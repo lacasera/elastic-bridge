@@ -69,14 +69,18 @@ class QueryBuilder
      */
     public function setPayload(string $key, mixed $payload): static
     {
-        $data = data_get($this->payload, $key);
+        // Boolean occupant clauses must always be arrays of clause objects so
+        // that chaining multiple clauses of the same type stays valid DSL.
+        $arrayClauses = ['must', 'should', 'must_not', 'filter'];
 
-        if (! $data) {
-            $this->payload[$key] = is_array($payload) ? $payload : [$payload];
-        } else {
-            $data[] = $payload;
-            data_set($this->payload, $key, $data);
+        if (in_array($key, $arrayClauses, true)) {
+            $this->payload[$key] ??= [];
+            $this->payload[$key][] = $payload;
+
+            return $this;
         }
+
+        $this->payload[$key] = is_array($payload) ? $payload : [$payload];
 
         return $this;
     }
@@ -95,13 +99,17 @@ class QueryBuilder
      */
     public function count(string $index)
     {
-        $payload = $this->hasPayload() ? $this->getPayload() : $this->defaultPayload();
+        $full = $this->hasPayload() ? $this->getPayload() : $this->defaultPayload();
+
+        // The _count API only accepts a `query`; sort/size/aggs/_source would
+        // be rejected, so send the query sub-object alone.
+        $body = ['query' => $full['query'] ?? []];
 
         return $this->getConnection()
             ->getClient()
             ->count([
                 'index' => $index,
-                'body' => $payload,
+                'body' => $body,
             ])
             ->asArray()['count'];
     }
@@ -141,7 +149,18 @@ class QueryBuilder
             }
         }
 
-        if ($filters !== [] && array_key_exists('bool', $body)) {
+        if ($filters !== []) {
+            // Filters are only valid inside a bool query. Promote any existing
+            // non-bool query into bool.must so filters are never silently dropped.
+            if (! array_key_exists('bool', $body)) {
+                $existing = $body;
+                $body = ['bool' => []];
+
+                if ($existing !== []) {
+                    $body['bool']['must'] = [$existing];
+                }
+            }
+
             $body['bool']['filter'] = $filters;
         }
 
@@ -395,15 +414,21 @@ class QueryBuilder
     }
 
     /**
-     * Run the term-level validator (if one exists) against the assembled body.
+     * Run the validator (if one exists) against the assembled body.
+     *
+     * The validator is chosen from the body's actual top-level shape rather
+     * than the requested term, since filter promotion can turn a non-bool
+     * term into a bool query.
      */
     private function validateQuery(array $body): void
     {
-        if ($this->term === null || $this->term === self::RAW_TERM_LEVEL) {
+        if ($this->term === null || $this->term === self::RAW_TERM_LEVEL || $body === []) {
             return;
         }
 
-        (new QueryValidator)->validate($this->term, [
+        $effectiveTerm = (string) array_key_first($body);
+
+        (new QueryValidator)->validate($effectiveTerm, [
             'body' => [$this->type => $body],
         ]);
     }

@@ -33,9 +33,9 @@ class QueryBuilderTest extends TestCase
         $expected = [
             'query' => [
                 'must' => [
-                    'match_all' => [
+                    ['match_all' => [
                         'boost' => 2.0,
-                    ],
+                    ]],
                 ],
             ],
         ];
@@ -51,9 +51,9 @@ class QueryBuilderTest extends TestCase
         $expected = [
             'query' => [
                 'should' => [
-                    'match_all' => [
+                    ['match_all' => [
                         'boost' => 1.0,
-                    ],
+                    ]],
                 ],
             ],
         ];
@@ -70,11 +70,33 @@ class QueryBuilderTest extends TestCase
             'query' => [
                 'bool' => [
                     'must' => [
-                        'match' => [
+                        ['match' => [
                             'currency' => [
                                 'query' => 'usd',
                             ],
-                        ],
+                        ]],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    #[Test]
+    public function it_appends_multiple_must_clauses_as_an_array(): void
+    {
+        $actual = Room::asBoolean()
+            ->mustMatch('currency', 'usd')
+            ->mustMatch('code', 'xoxo')
+            ->toQuery();
+
+        $expected = [
+            'query' => [
+                'bool' => [
+                    'must' => [
+                        ['match' => ['currency' => ['query' => 'usd']]],
+                        ['match' => ['code' => ['query' => 'xoxo']]],
                     ],
                 ],
             ],
@@ -119,9 +141,9 @@ class QueryBuilderTest extends TestCase
         $expected = [
             'query' => [
                 'must' => [
-                    'exists' => [
+                    ['exists' => [
                         'field' => 'currency',
-                    ],
+                    ]],
                 ],
             ],
         ];
@@ -137,9 +159,9 @@ class QueryBuilderTest extends TestCase
         $expected = [
             'query' => [
                 'should' => [
-                    'exists' => [
+                    ['exists' => [
                         'field' => 'currency',
-                    ],
+                    ]],
                 ],
             ],
         ];
@@ -204,6 +226,53 @@ class QueryBuilderTest extends TestCase
                         'fuzziness' => 0.5,
                         'boost' => 1,
                         'prefix_length' => 1,
+                    ],
+                ],
+            ],
+        ];
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    #[Test]
+    public function it_promotes_a_non_bool_query_into_bool_when_filters_are_present(): void
+    {
+        $actual = Room::asRaw()
+            ->raw(['match' => ['description' => 'foo']])
+            ->filterByRange('price', 10, 'gte')
+            ->toQuery();
+
+        $expected = [
+            'query' => [
+                'bool' => [
+                    'must' => [
+                        ['match' => ['description' => 'foo']],
+                    ],
+                    'filter' => [
+                        ['range' => ['price' => ['gte' => 10]]],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    #[Test]
+    public function it_nests_multi_match_as_a_bool_must_clause(): void
+    {
+        $actual = Room::query()
+            ->multiMatch(['title', 'body'], 'foo bar')
+            ->toQuery();
+
+        $expected = [
+            'query' => [
+                'bool' => [
+                    'must' => [
+                        ['multi_match' => [
+                            'query' => 'foo bar',
+                            'fields' => ['title', 'body'],
+                        ]],
                     ],
                 ],
             ],

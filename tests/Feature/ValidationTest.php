@@ -63,4 +63,20 @@ class ValidationTest extends TestCase
 
         $this->assertSame([['term' => ['code' => 'usd']]], $query['query']['bool']['filter']);
     }
+
+    #[Test]
+    public function it_rejects_a_match_clause_placed_directly_under_bool(): void
+    {
+        $this->expectException(InvalidQuery::class);
+
+        Room::asBoolean()->match('description', 'foo')->toQuery();
+    }
+
+    #[Test]
+    public function it_rejects_the_removed_from_range_operator(): void
+    {
+        $this->expectException(InvalidQuery::class);
+
+        Room::asRange()->range('price', 'from', 10);
+    }
 }

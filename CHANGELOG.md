@@ -22,12 +22,20 @@ All notable changes to `elastic-bridge` will be documented in this file.
 - Aggregation results are now stored per collection instance instead of via a global `Collection::macro()`. Results are still retrieved the same way (`$results->priceStats()`), but multiple aggregations on one response now coexist and results no longer leak across requests in long-lived workers (Octane, queues)
 - `all()` now returns a bounded first page (default `PAGINATION_SIZE`); the two divergent `all()` implementations were unified into one, removing the unbounded page size that could exceed Elasticsearch's `max_result_window`
 - `BoolValidator` now accepts all standard boolean clauses (`must`, `should`, `must_not`, `filter`, `minimum_should_match`, `boost`) and requires at least one
+- Boolean occupant clauses (`must`, `should`, `must_not`, `filter`) are now always emitted as arrays of clause objects (e.g. `must: [{…}]`), producing valid DSL for both single and multiple clauses
+- `multiMatch()` and `matchPhrase()` are now nested as `bool.must` clauses (they have no term-level of their own), producing valid DSL instead of an invalid top-level sibling key
+- `count()` now sends only the `query` to the `_count` API (previously the full search body, including `sort`/`size`/`aggs`/`_source`, which the endpoint rejects)
+
+### Removed
+- Deprecated `from`/`to` range operators (`RangeOperator::FROM`/`::TO`); only `gt`/`gte`/`lt`/`lte` are valid in an Elasticsearch `range` query (7.x+)
 
 ### Fixed
 - `getAttribute()` no longer errors when a hit has no `_source` (aggregation-only or `_source: false` responses)
 - `PaginatedCollection::links()` no longer fatals on empty result sets; returns `total: 0` with empty `previous`/`next` sort cursors
 - `::fake()` no longer references a test-only class, which caused a fatal class-not-found in non-dev installs
 - `save()` no longer mutates shared query builder state when checking for an existing record
+- Chaining two clauses of the same boolean type (e.g. `mustMatch()->mustMatch()`) no longer produces malformed DSL that Elasticsearch rejects
+- Filters (`filterByTerm`/`filterByRange`/`filterByGeo*`) are no longer silently dropped when used outside an explicit `asBoolean()` context; the query is promoted into a `bool` with the filters attached
 
 ### Notes
 - For Laravel 12 development, PHPUnit 11.5.3+, Larastan 3.0, and PHPStan 2.1+ are required
