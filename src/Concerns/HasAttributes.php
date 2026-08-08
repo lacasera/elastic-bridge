@@ -39,6 +39,14 @@ trait HasAttributes
 
         $value = data_get($this->attributes, '_source.'.$key);
 
+        if ($this->hasAttributeGetMutator($key)) {
+            return $this->mutateAttribute($key, $value);
+        }
+
+        if ($this->hasCast($key)) {
+            return $this->castAttribute($key, $value);
+        }
+
         if (is_array($value)) {
             return json_decode(json_encode($value), false);
         }
