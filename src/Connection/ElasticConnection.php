@@ -28,7 +28,7 @@ class ElasticConnection implements ConnectionInterface
         if ($verifySsl) {
 
             if (is_null(config('elasticbridge.certificate'))) {
-                throw new MissingEnvException('ELASTICSEARCH_SSL_CERT is required if verify_ssl is true');
+                throw new MissingEnvException('SEARCH_SSL_CERT is required if verify_ssl is true');
             }
 
             $clientBuilder->setSSLCert(config('elasticbridge.certificate'));
@@ -40,7 +40,7 @@ class ElasticConnection implements ConnectionInterface
             $apiKey = config('elasticbridge.api_key');
 
             if (is_null($apiKey)) {
-                throw new MissingEnvException('missing value for ELASTICSEARCH_API_KEY env');
+                throw new MissingEnvException('missing value for SEARCH_API_KEY env');
             }
 
             if (is_string($apiKey)) {
@@ -58,10 +58,33 @@ class ElasticConnection implements ConnectionInterface
         $this->client = $clientBuilder->build();
     }
 
-    /**
-     * @throws AuthenticationException
-     */
     #[Override]
+    public function search(array $params): array
+    {
+        return $this->client->search($params)->asArray();
+    }
+
+    #[Override]
+    public function count(array $params): array
+    {
+        return $this->client->count($params)->asArray();
+    }
+
+    #[Override]
+    public function index(array $params): array
+    {
+        return $this->client->index($params)->asArray();
+    }
+
+    #[Override]
+    public function update(array $params): bool
+    {
+        return $this->client->update($params)->asBool();
+    }
+
+    /**
+     * Escape hatch for advanced use — not part of ConnectionInterface.
+     */
     public function getClient(): Client
     {
         return $this->client;

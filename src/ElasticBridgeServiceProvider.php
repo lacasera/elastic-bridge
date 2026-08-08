@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Lacasera\ElasticBridge;
 
 use Lacasera\ElasticBridge\Commands\ElasticBridgeCommand;
+use Lacasera\ElasticBridge\Connection\ConnectionFactory;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
-use Lacasera\ElasticBridge\Connection\ElasticConnection;
 use Override;
 use Spatie\LaravelPackageTools\Exceptions\InvalidPackage;
 use Spatie\LaravelPackageTools\Package;
@@ -34,6 +34,9 @@ class ElasticBridgeServiceProvider extends PackageServiceProvider
     {
         parent::register();
 
-        $this->app->bind(ConnectionInterface::class, ElasticConnection::class);
+        $this->app->bind(
+            ConnectionInterface::class,
+            fn (): ConnectionInterface => ConnectionFactory::make((array) config('elasticbridge'))
+        );
     }
 }

@@ -20,6 +20,7 @@
         "elasticsearch/elasticsearch": "^8.14",
         "illuminate/contracts": "^10.0|^11.0|^12.0",
         "laravel/prompts": "^0.1.9|^0.2|^0.3|^0.4|^0.5",
+        "opensearch-project/opensearch-php": "^2.6",
         "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
@@ -36,6 +37,9 @@
         "phpstan/phpstan-phpunit": "^1.3",
         "phpunit/phpunit": "^10.5",
         "rector/rector": "^1.2"
+    },
+    "suggest": {
+        "aws/aws-sdk-php": "Required only for OpenSearch AWS SigV4 authentication (elasticbridge.auth_method=sigv4)."
     },
     "autoload": {
         "psr-4": {

@@ -423,7 +423,7 @@ class BridgeBuilder implements BridgeBuilderInterface
 
         $payload['body'] = $attributes;
 
-        $res = $this->query->getConnection()->getClient()->index($payload)->asArray();
+        $res = $this->query->getConnection()->index($payload);
 
         return data_get($res, '_id');
     }

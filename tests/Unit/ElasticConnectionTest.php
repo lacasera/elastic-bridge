@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge\Tests\Unit;
 
+use Elastic\Elasticsearch\Client;
 use Elastic\Transport\Transport;
 use Lacasera\ElasticBridge\Connection\ElasticConnection;
 use Lacasera\ElasticBridge\Exceptions\MissingEnvException;
@@ -88,7 +89,7 @@ class ElasticConnectionTest extends TestCase
     public function it_requires_api_key_when_auth_method_is_api_key(): void
     {
         $this->expectException(MissingEnvException::class);
-        $this->expectExceptionMessage('missing value for ELASTICSEARCH_API_KEY env');
+        $this->expectExceptionMessage('missing value for SEARCH_API_KEY env');
 
         config()->set('elasticbridge.auth_method', 'api-key');
         config()->set('elasticbridge.api_key', null);
@@ -101,7 +102,7 @@ class ElasticConnectionTest extends TestCase
     public function it_requires_certificate_when_verify_ssl_is_true_and_certificate_missing(): void
     {
         $this->expectException(MissingEnvException::class);
-        $this->expectExceptionMessage('ELASTICSEARCH_SSL_CERT is required if verify_ssl is true');
+        $this->expectExceptionMessage('SEARCH_SSL_CERT is required if verify_ssl is true');
 
         config()->set('elasticbridge.verify_ssl', true);
         config()->set('elasticbridge.certificate', null);
@@ -117,5 +118,13 @@ class ElasticConnectionTest extends TestCase
 
         $elasticConnection = $this->makeConnection();
         $this->assertNotNull($elasticConnection->getClient());
+    }
+
+    #[Test]
+    public function it_accepts_multiple_hosts(): void
+    {
+        config()->set('elasticbridge.host', ['https://node-1:9200', 'https://node-2:9200']);
+
+        $this->assertInstanceOf(Client::class, $this->makeConnection()->getClient());
     }
 }

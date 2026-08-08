@@ -1,49 +1,71 @@
 <?php
 
 /**
- * for more information visit
- * https://www.elastic.co/guide/en/elasticsearch/reference/current/run-elasticsearch-locally.html
+ * ElasticBridge works with both Elasticsearch and OpenSearch. The connection
+ * settings below are backend-agnostic and shared by both drivers.
  */
 return [
 
     /**
-     * Authentication method for Elasticsearch client
-     * Supported: basic-auth, api-key
+     * Search backend driver
+     * Supported: elasticsearch, opensearch
      */
-    'auth_method' => env('ELASTICSEARCH_AUTH_METHOD', 'basic-auth'),
+    'driver' => env('SEARCH_DRIVER', 'elasticsearch'),
 
     /**
-     * elastic host
+     * Authentication method for the search client
+     * Supported: basic-auth, api-key, sigv4 (opensearch only)
      */
-    'host' => [env('ELASTICSEARCH_HOST', 'https://localhost:9200')],
+    'auth_method' => env('SEARCH_AUTH_METHOD', 'basic-auth'),
 
     /**
-     * elastic username
+     * Search cluster host(s)
+     *
+     * Accepts a comma-separated list, e.g. SEARCH_HOST="https://a:9200,https://b:9200".
+     * Elasticsearch load-balances across all listed hosts (round-robin + failover);
+     * OpenSearch uses the first host only — its client is single-endpoint by design,
+     * so point it at a managed endpoint or a load balancer in front of the cluster.
      */
-    'username' => env('ELASTICSEARCH_USERNAME', 'elastic'),
+    'host' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('SEARCH_HOST', 'https://localhost:9200'))
+    ))),
 
     /**
-     * elastic password
+     * Basic-auth username
      */
-    'password' => env('ELASTICSEARCH_PASSWORD', null),
+    'username' => env('SEARCH_USERNAME', 'elastic'),
+
+    /**
+     * Basic-auth password
+     */
+    'password' => env('SEARCH_PASSWORD', null),
 
     /**
      * API key auth
-     * When using auth_method => 'api-key', set either:
+     * When using auth_method => 'api-key', set this value.
      */
-    'api_key' => env('ELASTICSEARCH_API_KEY', null),
+    'api_key' => env('SEARCH_API_KEY', null),
 
     /**
-     * Should elastic verify ssl certificate during connection
-     * ELASTICSEARCH_SSL_CERT is required if set to true
+     * Should the client verify the SSL certificate during connection
+     * SEARCH_SSL_CERT is required if set to true
      */
-    'verify_ssl' => env('ELASTICSEARCH_VERIFY_SSL', false),
+    'verify_ssl' => env('SEARCH_VERIFY_SSL', false),
 
     /**
-     * path to certificate file generated when installing elastic
-     * https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html#_use_the_ca_certificate
+     * Path to the CA certificate file generated when installing the cluster
      */
-    'certificate' => env('ELASTICSEARCH_SSL_CERT', null),
+    'certificate' => env('SEARCH_SSL_CERT', null),
+
+    /**
+     * AWS SigV4 signing (OpenSearch only, when auth_method => 'sigv4')
+     * Requires the aws/aws-sdk-php package: composer require aws/aws-sdk-php
+     */
+    'sig_v4' => [
+        'region' => env('SEARCH_AWS_REGION'),
+        'service' => env('SEARCH_AWS_SERVICE', 'es'), // 'es' (managed) | 'aoss' (serverless)
+    ],
 
     /**
      * where should bridge files be located

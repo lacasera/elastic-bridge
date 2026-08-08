@@ -106,12 +106,10 @@ class QueryBuilder
         $body = ['query' => $full['query'] ?? []];
 
         return $this->getConnection()
-            ->getClient()
             ->count([
                 'index' => $index,
                 'body' => $body,
-            ])
-            ->asArray()['count'];
+            ])['count'];
     }
 
     /**
@@ -299,11 +297,10 @@ class QueryBuilder
     public function makeRequest(string $index, $columns = ['*']): array
     {
         return $this->getConnection()
-            ->getClient()
             ->search([
                 'index' => $index,
                 'body' => $this->getPayload($columns),
-            ])->asArray();
+            ]);
     }
 
     /**
@@ -354,30 +351,14 @@ class QueryBuilder
             'body' => $body,
         ];
 
-        return $this->getConnection()->getClient()->update($query)->asBool();
+        return $this->getConnection()->update($query);
     }
 
-    /**
-     * @return array
-     *
-     * @throws ClientResponseException
-     * @throws ServerResponseException
-     */
-    protected function searchRequest(array $body)
+    public function indexRequest(array $body, bool $asArray = true): array|bool
     {
-        return $this->getConnection()
-            ->getClient()
-            ->search($body)
-            ->asArray();
-    }
+        $result = $this->getConnection()->index($body);
 
-    public function indexRequest(array $body, bool $asArray = true)
-    {
-        $result = $this->getConnection()
-            ->getClient()
-            ->index($body);
-
-        return $asArray ? $result->asArray() : $result->asBool();
+        return $asArray ? $result : in_array(data_get($result, 'result'), ['created', 'updated', 'noop'], true);
     }
 
     private function isSelectingFields(Collection $columns): bool
