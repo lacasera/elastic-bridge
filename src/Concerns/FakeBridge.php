@@ -9,8 +9,12 @@ use Lacasera\ElasticBridge\Testing\FakeConnection;
 
 trait FakeBridge
 {
-    public static function fake(array $response, int $status = 200): void
+    public static function fake(array $response, int $status = 200): FakeConnection
     {
-        app()->bind(ConnectionInterface::class, fn (): FakeConnection => new FakeConnection($response, $status));
+        $fakeConnection = new FakeConnection($response, $status);
+
+        app()->instance(ConnectionInterface::class, $fakeConnection);
+
+        return $fakeConnection;
     }
 }

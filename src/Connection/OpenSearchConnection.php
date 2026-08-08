@@ -46,6 +46,12 @@ class OpenSearchConnection implements ConnectionInterface
         return in_array(data_get($result, 'result'), ['updated', 'created', 'noop'], true);
     }
 
+    #[Override]
+    public function bulk(array $params): array
+    {
+        return $this->client->bulk($params);
+    }
+
     /**
      * Escape hatch for advanced use — not part of ConnectionInterface.
      */

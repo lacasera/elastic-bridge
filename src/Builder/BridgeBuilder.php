@@ -11,10 +11,13 @@ use Elastic\Elasticsearch\Exception\ServerResponseException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\ForwardsCalls;
+use InvalidArgumentException;
 use Lacasera\ElasticBridge\Concerns\HasAggregates;
 use Lacasera\ElasticBridge\Concerns\SetsTerm;
+use Lacasera\ElasticBridge\DTO\BulkResult;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Enums\OrderOperator;
+use Lacasera\ElasticBridge\Exceptions\BulkLimitExceeded;
 use Lacasera\ElasticBridge\Exceptions\InvalidQuery;
 use Lacasera\ElasticBridge\Query\QueryBuilder;
 use Lacasera\ElasticBridge\Query\Traits\HasFilters;
@@ -426,6 +429,96 @@ class BridgeBuilder implements BridgeBuilderInterface
         $res = $this->query->getConnection()->index($payload);
 
         return data_get($res, '_id');
+    }
+
+    /**
+     * Bulk-index a list of documents. A row's `id` (if present) becomes the `_id`.
+     *
+     * @param  array<int, array>  $rows
+     */
+    public function bulk(array $rows, ?int $chunkSize = null): BulkResult
+    {
+        return $this->performBulk($rows, 'index', $chunkSize);
+    }
+
+    /**
+     * Bulk update-or-insert a list of documents. Each row must include an `id`.
+     *
+     * @param  array<int, array>  $rows
+     */
+    public function upsert(array $rows, ?int $chunkSize = null): BulkResult
+    {
+        return $this->performBulk($rows, 'upsert', $chunkSize);
+    }
+
+    /**
+     * @param  array<int, array>  $rows
+     *
+     * @throws BulkLimitExceeded
+     */
+    protected function performBulk(array $rows, string $action, ?int $chunkSize): BulkResult
+    {
+        $max = (int) config('elasticbridge.bulk.max', 10000);
+
+        if (count($rows) > $max) {
+            throw BulkLimitExceeded::make(count($rows), $max);
+        }
+
+        $size = $chunkSize ?? (int) config('elasticbridge.bulk.chunk_size', 500);
+
+        $index = $this->getBridge()->getIndex();
+
+        $items = [];
+
+        foreach (array_chunk($rows, max($size, 1)) as $chunk) {
+            $response = $this->query->getConnection()->bulk([
+                'body' => $this->buildBulkBody($chunk, $action, $index),
+            ]);
+
+            $items = array_merge($items, data_get($response, 'items', []));
+        }
+
+        return new BulkResult($items);
+    }
+
+    /**
+     * Build the NDJSON action/source body for a bulk request.
+     *
+     * @param  array<int, array>  $rows
+     * @return array<int, array>
+     */
+    protected function buildBulkBody(array $rows, string $action, string $index): array
+    {
+        $body = [];
+
+        foreach ($rows as $row) {
+            if ($action === 'upsert') {
+                $id = data_get($row, 'id');
+
+                if ($id === null) {
+                    throw new InvalidArgumentException('upsert requires an "id" for each document.');
+                }
+
+                data_forget($row, 'id');
+
+                $body[] = ['update' => ['_index' => $index, '_id' => $id]];
+                $body[] = ['doc' => $row, 'doc_as_upsert' => true];
+
+                continue;
+            }
+
+            $meta = ['_index' => $index];
+
+            if (Arr::has($row, 'id')) {
+                $meta['_id'] = data_get($row, 'id');
+                data_forget($row, 'id');
+            }
+
+            $body[] = ['index' => $meta];
+            $body[] = $row;
+        }
+
+        return $body;
     }
 
     /**

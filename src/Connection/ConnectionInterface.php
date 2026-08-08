@@ -25,4 +25,9 @@ interface ConnectionInterface
      * Update a document and return whether the request succeeded.
      */
     public function update(array $params): bool;
+
+    /**
+     * Execute a bulk request and return the decoded response (read `['items']`).
+     */
+    public function bulk(array $params): array;
 }

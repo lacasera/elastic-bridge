@@ -82,6 +82,12 @@ class ElasticConnection implements ConnectionInterface
         return $this->client->update($params)->asBool();
     }
 
+    #[Override]
+    public function bulk(array $params): array
+    {
+        return $this->client->bulk($params)->asArray();
+    }
+
     /**
      * Escape hatch for advanced use — not part of ConnectionInterface.
      */
