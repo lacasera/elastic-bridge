@@ -3,10 +3,12 @@
     "allow": [
       "Read(//Users/william/office/php-lab/elasticbridge.dev/**)",
       "Read(//Users/william/office/php-lab/elasticbridge.dev/docs/v2/**)",
-      "Bash(cd /Users/william/office/php-lab/elasticbridge.dev; echo \"===v2 pages built===\"; ls .vitepress/dist/docs/v2/ 2>/dev/null; echo \"===v1 pages built===\"; ls .vitepress/dist/docs/v1/ 2>/dev/null; echo \"===new v2 pages present?===\"; ls .vitepress/dist/docs/v2/configuration.html .vitepress/dist/docs/v2/upgrade-guide.html 2>/dev/null && echo OK)"
+      "Bash(cd /Users/william/office/php-lab/elasticbridge.dev; echo \"===v2 pages built===\"; ls .vitepress/dist/docs/v2/ 2>/dev/null; echo \"===v1 pages built===\"; ls .vitepress/dist/docs/v1/ 2>/dev/null; echo \"===new v2 pages present?===\"; ls .vitepress/dist/docs/v2/configuration.html .vitepress/dist/docs/v2/upgrade-guide.html 2>/dev/null && echo OK)",
+      "Bash(composer require *)"
     ],
     "additionalDirectories": [
-      "/Users/william/office/php-lab/elasticbridge.dev/docs/v2"
+      "/Users/william/office/php-lab/elasticbridge.dev/docs/v2",
+      "/Users/william/office/php-lab/elasticbridge.dev/.vitepress"
     ]
   }
 }

@@ -11,3 +11,12 @@ parameters:
     checkModelProperties: true
     ignoreErrors:
         - "#^Unsafe usage of new static#"
+        # Bridges are not Eloquent Models; casts receive the bridge as $model.
+        # Laravel's built-in cast classes and bridge-native casts accept an untyped $model.
+        -
+            message: '#Parameter \#1 \$model of method Illuminate\\Contracts\\Database\\Eloquent\\(CastsAttributes<mixed,mixed>::(get|set)|SerializesCastableAttributes::serialize)\(\) expects Illuminate\\Database\\Eloquent\\Model, \$this\(Lacasera\\ElasticBridge\\ElasticBridge\) given\.#'
+            path: src/Concerns/HasCasts.php
+        # Attribute get/set closures are invoked with ($value, $attributes).
+        -
+            message: '#Callable callable\(.*\): mixed invoked with 2 parameters#'
+            path: src/Concerns/HasAttributeMutators.php

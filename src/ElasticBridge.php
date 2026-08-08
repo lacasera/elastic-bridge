@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Lacasera\ElasticBridge;
 
+use BackedEnum;
+use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Arr;
@@ -13,7 +15,9 @@ use JsonException;
 use JsonSerializable;
 use Lacasera\ElasticBridge\Builder\BridgeBuilder;
 use Lacasera\ElasticBridge\Concerns\FakeBridge;
+use Lacasera\ElasticBridge\Concerns\HasAttributeMutators;
 use Lacasera\ElasticBridge\Concerns\HasAttributes;
+use Lacasera\ElasticBridge\Concerns\HasCasts;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
 use Lacasera\ElasticBridge\DTO\Bucket;
 use Lacasera\ElasticBridge\DTO\Stats;
@@ -27,7 +31,9 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
 {
     use FakeBridge;
     use ForwardsCalls;
+    use HasAttributeMutators;
     use HasAttributes;
+    use HasCasts;
     use HasCollection;
 
     /**
@@ -36,6 +42,20 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
      * @var string
      */
     protected $index;
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [];
+
+    /**
+     * The accessors to append to the array/JSON form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [];
 
     /**
      * @var bool
@@ -144,7 +164,29 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
 
     public function __set(string $name, mixed $value): void
     {
-        data_set($this->attributes, '_source.'.$name, $value);
+        $this->setAttribute($name, $value);
+    }
+
+    /**
+     * Set an attribute, applying any mutator or cast before storage.
+     */
+    public function setAttribute(string $key, mixed $value): static
+    {
+        if ($this->hasAttributeSetMutator($key)) {
+            $this->setMutatedAttributeValue($key, $value);
+
+            return $this;
+        }
+
+        if ($this->hasCast($key)) {
+            $this->castAndStore($key, $value);
+
+            return $this;
+        }
+
+        data_set($this->attributes, '_source.'.$key, $value);
+
+        return $this;
     }
 
     public function setIndex(string $index): ElasticBridge
@@ -185,13 +227,50 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
 
     /**
      * Get the instance as an array.
-     * Returns only the _source data for clean JSON responses.
+     * Returns the _source data (with casts, mutators, and appends applied).
      *
      * @return array
      */
     public function attributesToArray()
     {
-        return $this->attributes['_source'] ?? $this->attributes;
+        $source = $this->attributes['_source'] ?? null;
+
+        if (! is_array($source)) {
+            return $this->attributes;
+        }
+
+        $casts = $this->getCasts();
+
+        $result = [];
+
+        foreach ($source as $key => $value) {
+            if ($this->hasAttributeGetMutator($key)) {
+                $result[$key] = $this->serializeAttributeValue($this->mutateAttribute($key, $value));
+            } elseif (array_key_exists($key, $casts)) {
+                $result[$key] = $this->serializeCast($key, $value);
+            } else {
+                $result[$key] = $value;
+            }
+        }
+
+        foreach ($this->getAppends() as $key) {
+            $result[$key] = $this->serializeAttributeValue($this->mutateAttribute($key, null));
+        }
+
+        return $result;
+    }
+
+    /**
+     * Reduce a mutated/accessor value to a JSON-serializable form.
+     */
+    protected function serializeAttributeValue(mixed $value): mixed
+    {
+        return match (true) {
+            $value instanceof DateTimeInterface => $this->serializeDate($value),
+            $value instanceof BackedEnum => $value->value,
+            $value instanceof Arrayable => $value->toArray(),
+            default => $value,
+        };
     }
 
     /**

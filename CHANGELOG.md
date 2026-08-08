@@ -9,6 +9,7 @@ All notable changes to `elastic-bridge` will be documented in this file.
 - PHP 8.3 support
 - Carbon 3.8.4+ support for Laravel 12
 - Orchestra Testbench 10.x support for Laravel 12
+- Attribute casting via `$casts` (or a `casts()` method) with full Eloquent parity — primitives, dates (`date`/`datetime`/immutable/`timestamp`), `decimal:n`, backed enums, enum collections, `encrypted*`, `hashed`, array-object/collection casts, and custom `CastsAttributes`; plus accessors & mutators via `Attribute::make` and `$appends`. Adds `illuminate/database` as a dependency.
 - Bulk insert and upsert via `Model::bulk([...])` and `Model::upsert([...])` — automatic chunking, a configurable record cap (`bulk.max` / `bulk.chunk_size`), and a `BulkResult` DTO (`successful()`, `failed()`, `count()`, `total()`, `hasErrors()`) reporting per-item outcomes
 - Query validation layer is now active: `bool`, `match`, and `terms_set` term-level queries are validated when built (`QueryValidator` wired into `QueryBuilder::getPayload()`)
 - Order direction (`orderBy`) and range operators (`filterByRange`, `range`) are now validated against `OrderOperator`/`RangeOperator`, throwing `InvalidQuery` on invalid input
