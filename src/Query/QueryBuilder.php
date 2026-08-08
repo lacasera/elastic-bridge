@@ -308,10 +308,10 @@ class QueryBuilder
      * @throws MissingParameterException
      * @throws ServerResponseException
      */
-    public function save(ElasticBridge $elasticBridge): bool
+    public function save(ElasticBridge $elasticBridge, ?string $index = null): bool
     {
-        return $this->update($elasticBridge->getIndex(), [
-            'doc' => data_get($elasticBridge->attributesToArray(), '_source'),
+        return $this->update($index ?? $elasticBridge->getWriteIndex(), [
+            'doc' => $elasticBridge->attributesToArray(),
         ], $elasticBridge->id);
     }
 
