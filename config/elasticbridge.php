@@ -68,6 +68,16 @@ return [
     ],
 
     /**
+     * Bulk insert / upsert limits
+     * - max: hard cap on documents accepted by bulk()/upsert() in a single call
+     * - chunk_size: documents per bulk request when the input is chunked
+     */
+    'bulk' => [
+        'max' => env('SEARCH_BULK_MAX', 10000),
+        'chunk_size' => env('SEARCH_BULK_CHUNK_SIZE', 500),
+    ],
+
+    /**
      * where should bridge files be located
      */
     'namespace' => 'App\\Bridges',
