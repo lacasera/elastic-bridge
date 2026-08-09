@@ -21,6 +21,7 @@ use Lacasera\ElasticBridge\Concerns\HasCasts;
 use Lacasera\ElasticBridge\Concerns\HasCollection;
 use Lacasera\ElasticBridge\DTO\Bucket;
 use Lacasera\ElasticBridge\DTO\Stats;
+use Lacasera\ElasticBridge\Exceptions\AmbiguousWriteIndex;
 use Lacasera\ElasticBridge\Exceptions\ErrorEncodingJson;
 use Override;
 
@@ -37,11 +38,18 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
     use HasCollection;
 
     /**
-     * The index associated with the bridge
+     * The index (or wildcard/comma pattern) the bridge reads from.
      *
      * @var string
      */
     protected $index;
+
+    /**
+     * The concrete index the bridge writes to (defaults to $index).
+     *
+     * @var string|null
+     */
+    protected $writeIndex;
 
     /**
      * The attributes that should be cast.
@@ -72,6 +80,35 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
     public function getIndex(): string
     {
         return $this->index ?: Str::snake(Str::pluralStudly(class_basename($this)));
+    }
+
+    /**
+     * The index (or wildcard/comma pattern) to search against.
+     */
+    public function getSearchIndex(): string
+    {
+        return $this->getIndex();
+    }
+
+    /**
+     * The concrete index to write to. Existing documents write back to the index
+     * they were read from; a wildcard/comma pattern is rejected.
+     *
+     * @throws AmbiguousWriteIndex
+     */
+    public function getWriteIndex(): string
+    {
+        if ($this->exists && ($origin = data_get($this->attributes, '_index'))) {
+            return $origin;
+        }
+
+        $index = $this->writeIndex ?: $this->getIndex();
+
+        if (str_contains($index, '*') || str_contains($index, ',')) {
+            throw AmbiguousWriteIndex::for($index);
+        }
+
+        return $index;
     }
 
     /**

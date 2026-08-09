@@ -35,6 +35,10 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     private bool $isPaginating = false;
 
+    private ?string $searchIndex = null;
+
+    private ?string $writeIndex = null;
+
     public function __construct()
     {
         $this->query = app()->make(QueryBuilder::class);
@@ -53,6 +57,41 @@ class BridgeBuilder implements BridgeBuilderInterface
     public function getBridge(): ElasticBridge
     {
         return $this->bridge;
+    }
+
+    /**
+     * Override the index (or wildcard/comma pattern) to search against.
+     *
+     * @param  string|array<int, string>  $index
+     * @return $this
+     */
+    public function from(string|array $index): static
+    {
+        $this->searchIndex = is_array($index) ? implode(',', $index) : $index;
+
+        return $this;
+    }
+
+    /**
+     * Override the concrete index to write to (wins over a document's origin index).
+     *
+     * @return $this
+     */
+    public function into(string $index): static
+    {
+        $this->writeIndex = $index;
+
+        return $this;
+    }
+
+    public function resolveSearchIndex(): string
+    {
+        return $this->searchIndex ?? $this->getBridge()->getSearchIndex();
+    }
+
+    public function resolveWriteIndex(): string
+    {
+        return $this->writeIndex ?? $this->getBridge()->getWriteIndex();
     }
 
     /**
@@ -330,7 +369,7 @@ class BridgeBuilder implements BridgeBuilderInterface
 
     public function count(): int
     {
-        return $this->query->count($this->getBridge()->getIndex());
+        return $this->query->count($this->resolveSearchIndex());
     }
 
     /**
@@ -391,7 +430,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     public function getBridges(array $columns = ['*']): mixed
     {
         return $this->bridge->hydrate(
-            $this->query->get($this->getBridge()->getIndex(), $columns),
+            $this->query->get($this->resolveSearchIndex(), $columns),
             $this->isPaginating
         );
     }
@@ -416,7 +455,7 @@ class BridgeBuilder implements BridgeBuilderInterface
     public function create(array $attributes)
     {
         $payload = [
-            'index' => $this->bridge->getIndex(),
+            'index' => $this->resolveWriteIndex(),
         ];
 
         if (Arr::has($attributes, 'id')) {
@@ -466,7 +505,7 @@ class BridgeBuilder implements BridgeBuilderInterface
 
         $size = $chunkSize ?? (int) config('elasticbridge.bulk.chunk_size', 500);
 
-        $index = $this->getBridge()->getIndex();
+        $index = $this->resolveWriteIndex();
 
         $items = [];
 
@@ -555,12 +594,12 @@ class BridgeBuilder implements BridgeBuilderInterface
         $res = $this->bridge->newBridgeQuery()->find($id);
 
         if (! $res) {
-            $id = $this->create($this->bridge->attributesToArray()['_source']);
+            $id = $this->create($this->bridge->attributesToArray());
 
             return boolval($id);
         }
 
-        return $this->query->save($this->bridge);
+        return $this->query->save($this->bridge, $this->resolveWriteIndex());
     }
 
     /**
@@ -570,7 +609,7 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function scriptRequest(string $source, array $params): bool
     {
-        return $this->query->update($this->bridge->getIndex(), [
+        return $this->query->update($this->resolveWriteIndex(), [
             'script' => [
                 'source' => $source,
                 'params' => $params,
