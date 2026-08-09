@@ -71,7 +71,7 @@ trait HasAggregates
                     ...$options,
                 ],
             ])
-            ->makeAggregateRequest($key, $this->getBridge()->getIndex());
+            ->makeAggregateRequest($key, $this->resolveSearchIndex());
     }
 
     public function stats(string $field): Stats
