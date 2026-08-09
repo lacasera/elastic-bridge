@@ -99,7 +99,9 @@ class QueryBuilder
      */
     public function count(string $index)
     {
-        $full = $this->hasPayload() ? $this->getPayload() : $this->defaultPayload();
+        // Build the full query when a term context is set (so filters/range are
+        // included even when no must/should clause was added); otherwise count all.
+        $full = $this->term !== null ? $this->getPayload() : $this->defaultPayload();
 
         // The _count API only accepts a `query`; sort/size/aggs/_source would
         // be rejected, so send the query sub-object alone.

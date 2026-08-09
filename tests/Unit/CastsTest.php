@@ -155,6 +155,7 @@ class CastsTest extends TestCase
         $product = $this->product([
             'sku' => 'ABC',
             'in_stock' => 1,
+            'price' => '19.5',
             'currency' => 'usd',
             'published_at' => '2024-01-02T03:04:05+00:00',
         ]);
@@ -162,6 +163,7 @@ class CastsTest extends TestCase
         $array = $product->toArray();
 
         $this->assertTrue($array['in_stock']);
+        $this->assertSame('19.50', $array['price']); // decimal:2 serializes without throwing
         $this->assertSame('usd', $array['currency']);
         $this->assertSame('2024-01-02T03:04:05+00:00', $array['published_at']);
         $this->assertSame('Product: ABC', $array['display_name']); // appended accessor
