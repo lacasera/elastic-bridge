@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://elasticbridge.dev">
+    <img src="https://elasticbridge.dev/brand/logo-banner-dark.png" alt="ElasticBridge — an eloquent way to search" width="100%">
+  </a>
+</p>
+
 # An Eloquent Way To Search.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/lacasera/elastic-bridge.svg?style=flat-square)](https://packagist.org/packages/lacasera/elastic-bridge)
