@@ -4,7 +4,16 @@
     "keywords": [
         "Lacasera",
         "laravel",
-        "elastic-bridge"
+        "elastic-bridge",
+        "elasticsearch",
+        "opensearch",
+        "search",
+        "full-text-search",
+        "eloquent",
+        "query-builder",
+        "laravel-boost",
+        "ai",
+        "llm"
     ],
     "homepage": "https://github.com/lacasera/elastic-bridge",
     "license": "MIT",

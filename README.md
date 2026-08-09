@@ -11,17 +11,15 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/lacasera/elastic-bridge/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/lacasera/elastic-bridge/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/lacasera/elastic-bridge.svg?style=flat-square)](https://packagist.org/packages/lacasera/elastic-bridge)
 
-ElasticBridge allows you to write `Fluent`, `Eloquent` like Elasticsearch queries in your laravel application.
+ElasticBridge allows you to write `Fluent`, `Eloquent` like queries against **Elasticsearch and OpenSearch** in your Laravel application.
 
-With ElasticBridge, you can interact with Elasticsearch indexes as easily as you would with traditional Eloquent models, bringing the power of Elasticsearch into the Laravel ecosystem with no effort.
-
-This package simplifies the complexity of Elasticsearch queries, allowing you to execute powerful search operations while maintaining the elegance and familiarity of Laravel's syntax.
+With ElasticBridge, you can interact with your search indexes as easily as you would with traditional Eloquent models — full-text search, filters, aggregations, attribute casting, bulk indexing, and multi-index queries — bringing the power of Elasticsearch/OpenSearch into the Laravel ecosystem with no effort.
 
 ## Requirements
 
 - PHP 8.2 or 8.3
 - Laravel 10.x, 11.x, or 12.x
-- Elasticsearch 8.x
+- Elasticsearch 8.x **or** OpenSearch 2.x
 
 ## Compatibility Matrix
 
@@ -89,6 +87,21 @@ class SearchController extends  Controller
 ```
 
 # [Documentation](https://elasticbridge.dev)
+
+## AI-assisted development
+
+ElasticBridge is built to be first-class for AI coding agents:
+
+- **Laravel Boost skill & guidelines.** The package ships an
+  [`elastic-bridge-development`](resources/boost/skills/elastic-bridge-development/SKILL.md)
+  skill and [core guidelines](resources/boost/guidelines/core.blade.php). If your project uses
+  [Laravel Boost](https://laravel.com/docs/boost), run `php artisan boost:install` and your agent
+  automatically gets ElasticBridge-specific guidance.
+- **LLM-friendly docs.** The documentation is published in the
+  [`llms.txt`](https://llmstxt.org) format at
+  [elasticbridge.dev/llms.txt](https://elasticbridge.dev/llms.txt) (index) and
+  [elasticbridge.dev/llms-full.txt](https://elasticbridge.dev/llms-full.txt) (full text) so LLMs
+  can read the whole API in one fetch.
 
 ```bash
 composer test
