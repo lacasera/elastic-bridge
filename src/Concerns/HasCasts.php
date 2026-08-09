@@ -32,7 +32,7 @@ trait HasCasts
      * @var string[]
      */
     protected static array $primitiveCastTypes = [
-        'int', 'integer', 'real', 'float', 'double', 'string', 'bool', 'boolean',
+        'int', 'integer', 'real', 'float', 'double', 'decimal', 'string', 'bool', 'boolean',
         'object', 'array', 'json', 'collection', 'date', 'datetime', 'immutable_date',
         'immutable_datetime', 'timestamp', 'hashed',
         'encrypted', 'encrypted:array', 'encrypted:collection', 'encrypted:object',
