@@ -4,47 +4,53 @@ All notable changes to `elastic-bridge` will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-08-10
+
+ElasticBridge 2.0 adds **OpenSearch** support alongside Elasticsearch, an attribute
+**casting + accessors/mutators** layer, **bulk** write operations, **multi-index** queries,
+and a hardened query builder. This is a major release with breaking changes — see the
+[v1 → v2 upgrade guide](https://elasticbridge.dev/docs/v2/upgrade-guide).
+
 ### Added
-- Laravel 12.x support
-- PHP 8.3 support
-- Carbon 3.8.4+ support for Laravel 12
-- Orchestra Testbench 10.x support for Laravel 12
-- Nested (dot-notation) attributes: casts, accessors, and mutators apply to nested paths (e.g. `'hotel.location.lat' => 'float'`), values are assigned/retrieved by their dotted key, and `toArray()`/`toJson()` serialize nested casts and appended nested accessors in place (siblings preserved)
-- Multi-index queries: read from a wildcard/comma pattern (`$index = 'logs-*'`) while writing to a concrete index (`$writeIndex` or an overridden `getWriteIndex()`); existing documents write back to their origin `_index`, and `from()`/`into()` override the read/write index per call
-- Attribute casting via `$casts` (or a `casts()` method) with full Eloquent parity — primitives, dates (`date`/`datetime`/immutable/`timestamp`), `decimal:n`, backed enums, enum collections, `encrypted*`, `hashed`, array-object/collection casts, and custom `CastsAttributes`; plus accessors & mutators via `Attribute::make` and `$appends`. Adds `illuminate/database` as a dependency.
-- Bulk insert and upsert via `Model::bulk([...])` and `Model::upsert([...])` — automatic chunking, a configurable record cap (`bulk.max` / `bulk.chunk_size`), and a `BulkResult` DTO (`successful()`, `failed()`, `count()`, `total()`, `hasErrors()`) reporting per-item outcomes
-- Query validation layer is now active: `bool`, `match`, and `terms_set` term-level queries are validated when built (`QueryValidator` wired into `QueryBuilder::getPayload()`)
-- Order direction (`orderBy`) and range operators (`filterByRange`, `range`) are now validated against `OrderOperator`/`RangeOperator`, throwing `InvalidQuery` on invalid input
-- `Lacasera\ElasticBridge\Testing\FakeConnection` — a runtime-safe fake connection backing `::fake()`
+- **OpenSearch support.** Choose the backend with `SEARCH_DRIVER` (`elasticsearch` | `opensearch`) — the same fluent API works across both. Authentication: basic-auth, API key, and AWS SigV4 (via the optional `aws/aws-sdk-php`).
+- **Multi-host clusters.** `SEARCH_HOST` accepts a comma-separated list — Elasticsearch load-balances across all hosts; OpenSearch uses the given endpoint.
+- **Attribute casting** via `$casts` (or a `casts()` method) with full Eloquent parity — primitives, dates (`date`/`datetime`/immutable/`timestamp`), `decimal:n`, backed enums, enum collections, `encrypted*`, `hashed`, the `As*` casts, and custom `CastsAttributes`; plus **accessors & mutators** via `Attribute::make` and `$appends`.
+- **Nested (dot-notation) attributes.** Casts, accessors, and mutators apply to nested paths (e.g. `'hotel.location.lat' => 'float'`); values are assigned/retrieved by their dotted key and serialized in place in `toArray()`/`toJson()` (siblings preserved).
+- **Bulk insert & upsert** — `Model::bulk([...])` and `Model::upsert([...])` with automatic chunking, a configurable record cap (`bulk.max` / `bulk.chunk_size`), and a `BulkResult` DTO (`successful()`, `failed()`, `count()`, `total()`, `hasErrors()`).
+- **Multi-index queries.** Read from a wildcard/comma `$index` (e.g. `'logs-*'`) while writing to a concrete index (`$writeIndex` or an overridden `getWriteIndex()`); existing documents write back to their origin `_index`, and `from()` / `into()` override the read/write index per call.
+- **Query validation.** `bool`, `match`, and `terms_set` queries are validated when built; `orderBy` and range operators are validated against `OrderOperator` / `RangeOperator`, throwing `InvalidQuery` on invalid input.
+- **Laravel 12 & PHP 8.3** support (Carbon 3.8.4+, Orchestra Testbench 10.x).
+- **AI-assisted development.** Ships a Laravel Boost skill and guidelines (`resources/boost/…`); the documentation is published in [`llms.txt`](https://elasticbridge.dev/llms.txt) format.
+- `Lacasera\ElasticBridge\Testing\FakeConnection` — a driver-agnostic fake backing `::fake()`.
 
 ### Changed
-- Updated GitHub Actions workflow to dynamically handle Laravel 12 dependencies
-- Updated composer.json to support Laravel 10.x, 11.x, and 12.x
-- Updated phpunit.xml.dist schema to PHPUnit 11.5 (backward compatible with PHPUnit 10.5)
-- Improved version constraints for better compatibility across Laravel versions
-- Base package uses PHPStan 1.x (compatible with Rector), CI upgrades to PHPStan 2.1+ for Laravel 12 testing
-- Aggregation results are now stored per collection instance instead of via a global `Collection::macro()`. Results are still retrieved the same way (`$results->priceStats()`), but multiple aggregations on one response now coexist and results no longer leak across requests in long-lived workers (Octane, queues)
-- `all()` now returns a bounded first page (default `PAGINATION_SIZE`); the two divergent `all()` implementations were unified into one, removing the unbounded page size that could exceed Elasticsearch's `max_result_window`
-- `BoolValidator` now accepts all standard boolean clauses (`must`, `should`, `must_not`, `filter`, `minimum_should_match`, `boost`) and requires at least one
-- Boolean occupant clauses (`must`, `should`, `must_not`, `filter`) are now always emitted as arrays of clause objects (e.g. `must: [{…}]`), producing valid DSL for both single and multiple clauses
-- `multiMatch()` and `matchPhrase()` are now nested as `bool.must` clauses (they have no term-level of their own), producing valid DSL instead of an invalid top-level sibling key
-- `count()` now sends only the `query` to the `_count` API (previously the full search body, including `sort`/`size`/`aggs`/`_source`, which the endpoint rejects)
+- **BREAKING — environment variables renamed** `ELASTICSEARCH_*` → `SEARCH_*` (`SEARCH_DRIVER`, `SEARCH_HOST`, `SEARCH_USERNAME`, `SEARCH_PASSWORD`, `SEARCH_API_KEY`, `SEARCH_VERIFY_SSL`, `SEARCH_SSL_CERT`, plus `SEARCH_AWS_REGION`/`SEARCH_AWS_SERVICE`). There is no fallback — update your `.env`.
+- **BREAKING — `ConnectionInterface`** now exposes `search()`, `count()`, `index()`, `update()`, and `bulk()` instead of a driver-specific `getClient()`. Custom connections must implement these methods.
+- **BREAKING — `BridgeBuilder::all()`** signature is now `all(int $perPage = 15, array $columns = ['*'])` and returns a bounded first page.
+- Adds `illuminate/database` as a runtime dependency (used by the casting layer).
+- Aggregation results are stored per collection instance instead of a global `Collection::macro()` — multiple aggregations coexist and results no longer leak across requests in long-lived workers (Octane/queues).
+- Boolean clauses (`must`/`should`/`must_not`/`filter`) always render as arrays of clause objects; `multiMatch()` and `matchPhrase()` nest as `bool.must`.
+- `count()` sends only the `query` to the `_count` API (previously the full search body, which the endpoint rejects).
 
 ### Removed
-- Deprecated `from`/`to` range operators (`RangeOperator::FROM`/`::TO`); only `gt`/`gte`/`lt`/`lte` are valid in an Elasticsearch `range` query (7.x+)
+- **BREAKING** — the deprecated `from` / `to` range operators (`RangeOperator::FROM` / `::TO`); only `gt`/`gte`/`lt`/`lte` are valid in a `range` query.
 
 ### Fixed
-- `getAttribute()` no longer errors when a hit has no `_source` (aggregation-only or `_source: false` responses)
-- `PaginatedCollection::links()` no longer fatals on empty result sets; returns `total: 0` with empty `previous`/`next` sort cursors
-- `::fake()` no longer references a test-only class, which caused a fatal class-not-found in non-dev installs
-- `save()` no longer mutates shared query builder state when checking for an existing record
-- Chaining two clauses of the same boolean type (e.g. `mustMatch()->mustMatch()`) no longer produces malformed DSL that Elasticsearch rejects
-- Filters (`filterByTerm`/`filterByRange`/`filterByGeo*`) are no longer silently dropped when used outside an explicit `asBoolean()` context; the query is promoted into a `bool` with the filters attached
+- `decimal` casts no longer crash on serialization (`toArray()`/`toJson()`).
+- `stats()`, `histogram()`, and all query-scoped aggregates now work (aggregation key/macro/bucket detection aligned); numeric histogram bucket keys no longer throw (`Bucket::key()` accepts numeric keys).
+- `count()` now honors filters when only a filter clause is set (previously it counted all documents).
+- `getAttribute()` no longer errors when a hit has no `_source` (aggregation-only or `_source: false` responses).
+- `PaginatedCollection::links()` no longer fatals on empty result sets (returns `total: 0` with empty cursors).
+- `save()` no longer mutates shared query-builder state and correctly builds the update body.
+- Filters used outside an explicit `asBoolean()` are promoted into a `bool` instead of being silently dropped; chaining same-type boolean clauses produces valid DSL.
+- `::fake()` no longer references a test-only class (which caused a fatal class-not-found in non-dev installs).
+
+### Upgrading
+See the [v1 → v2 upgrade guide](https://elasticbridge.dev/docs/v2/upgrade-guide). Key steps:
+rename `ELASTICSEARCH_*` env vars to `SEARCH_*`, re-publish the config
+(`php artisan vendor:publish --tag="elastic-bridge-config" --force`), and update any custom
+`ConnectionInterface` implementations and `BridgeBuilder::all()` call sites.
 
 ### Notes
-- For Laravel 12 development, PHPUnit 11.5.3+, Larastan 3.0, and PHPStan 2.1+ are required
-- CI/CD pipeline automatically installs correct versions based on Laravel version being tested
-- Base package remains compatible with Laravel 10 and 11 out of the box
-- `TermSetValidator` was renamed to `TermsSetValidator` so it resolves for the `terms_set` term
-- The internal `tests/MockElasticConnection` was replaced by `Lacasera\ElasticBridge\Testing\FakeConnection`; aggregation results are no longer registered as global collection macros
-
+- Requires PHP 8.2 / 8.3 and Laravel 10.x–12.x. (Laravel 13 is not yet supported.)
+- `TermSetValidator` was renamed to `TermsSetValidator` so it resolves for the `terms_set` term.
