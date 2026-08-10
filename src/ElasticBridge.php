@@ -290,8 +290,19 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
             }
         }
 
+        // Nested (dot-notation) casts: overwrite only the addressed leaf so sibling
+        // nested fields are preserved.
+        foreach (array_keys($casts) as $castKey) {
+            if (str_contains((string) $castKey, '.') && Arr::has($source, $castKey)) {
+                data_set($result, $castKey, $this->serializeCast($castKey, data_get($source, $castKey)));
+            }
+        }
+
+        // Appended accessors (flat or nested); data_set keeps nested paths intact.
         foreach ($this->getAppends() as $key) {
-            $result[$key] = $this->serializeAttributeValue($this->mutateAttribute($key, null));
+            data_set($result, $key, $this->serializeAttributeValue(
+                $this->mutateAttribute($key, data_get($source, $key))
+            ));
         }
 
         return $result;
@@ -348,6 +359,11 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
             return collect(data_get($aggregations, $key.'.buckets'))->mapInto(Bucket::class)->collect();
         }
 
+        // Metric aggregates (avg/min/max/sum/…) carry a scalar `value`.
+        if (Arr::has($aggregations, $key.'.value')) {
+            return data_get($aggregations, $key.'.value');
+        }
+
         if (Arr::has($aggregations, $key)) {
             return data_get($aggregations, $key);
         }
@@ -357,7 +373,8 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
 
     protected function isBucketAggregate($key): bool
     {
-        $key = Arr::first(explode('_', (string) $key));
+        // Keys are "<field>_<type>", so the aggregate type is the last segment.
+        $key = Arr::last(explode('_', (string) $key));
 
         return in_array($key, ['histogram', 'range']);
     }

@@ -31,9 +31,12 @@ class Product extends ElasticBridge
         'currency' => Currency::class,
         'statuses' => AsEnumCollection::class.':'.Currency::class,
         'address' => AsAddress::class,
+        // nested (dot-notation) casts
+        'hotel.location.lat' => 'float',
+        'hotel.opened_at' => 'datetime',
     ];
 
-    protected $appends = ['display_name'];
+    protected $appends = ['display_name', 'hotel.badge'];
 
     protected function name(): Attribute
     {
@@ -47,6 +50,22 @@ class Product extends ElasticBridge
     {
         return Attribute::make(
             get: fn ($value, array $attributes): string => 'Product: '.($attributes['sku'] ?? ''),
+        );
+    }
+
+    /** Nested appended accessor for key "hotel.badge". */
+    protected function hotelBadge(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, array $attributes): string => strtoupper((string) data_get($attributes, 'hotel.name', '')),
+        );
+    }
+
+    /** Nested mutator for key "hotel.slug". */
+    protected function hotelSlug(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value): string => strtolower((string) $value),
         );
     }
 }

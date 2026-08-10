@@ -72,6 +72,20 @@ class HotelRoom extends \Lacasera\ElasticBridge\ElasticBridge
 </code-snippet>
 @endverbatim
 
+### Nested attributes
+
+Cast/accessor/mutator keys may use dot notation for nested document fields; assign and retrieve
+them by the dotted key.
+
+@verbatim
+<code-snippet name="Nested casts" lang="php">
+protected $casts = ['hotel.location.lat' => 'float', 'hotel.opened_at' => 'datetime'];
+
+$product->setAttribute('hotel.location.lat', '5.6'); // stored nested as float
+$product->getAttribute('hotel.location.lat');        // 5.6 (float)
+</code-snippet>
+@endverbatim
+
 ### Aggregations
 
 @verbatim

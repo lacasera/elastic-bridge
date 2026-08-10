@@ -26,7 +26,7 @@ class Bucket
         return $this->doc_count;
     }
 
-    public function key(): ?string
+    public function key(): string|int|float|null
     {
         return $this->key;
     }

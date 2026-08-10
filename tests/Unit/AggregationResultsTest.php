@@ -52,7 +52,7 @@ class AggregationResultsTest extends TestCase
                 'hits' => [],
             ],
             'aggregations' => [
-                'histogram_price' => [
+                'price_histogram' => [
                     'buckets' => [
                         ['key' => '10.0', 'doc_count' => 1, 'from' => 10.0, 'to' => 20.0],
                         ['key' => '20.0', 'doc_count' => 2, 'from' => 20.0, 'to' => 30.0],
@@ -63,7 +63,7 @@ class AggregationResultsTest extends TestCase
 
         $collection = (new Room)->hydrate($items);
 
-        $buckets = $collection->histogramPrice();
+        $buckets = $collection->priceHistogram();
         $this->assertInstanceOf(BaseCollection::class, $buckets);
         $this->assertInstanceOf(Bucket::class, $buckets->first());
         $this->assertSame('10.0', $buckets->first()->key());
@@ -85,7 +85,7 @@ class AggregationResultsTest extends TestCase
                     'avg' => 5.0,
                     'sum' => 5.0,
                 ],
-                'histogram_price' => [
+                'price_histogram' => [
                     'buckets' => [
                         ['key' => '0.0', 'doc_count' => 3, 'from' => 0.0, 'to' => 10.0],
                     ],
@@ -100,7 +100,7 @@ class AggregationResultsTest extends TestCase
         $this->assertInstanceOf(Stats::class, $collection->priceStats());
         $this->assertSame(5.0, $collection->priceStats()->sum());
 
-        $buckets = $collection->histogramPrice();
+        $buckets = $collection->priceHistogram();
         $this->assertInstanceOf(Bucket::class, $buckets->first());
         $this->assertSame(3.0, $buckets->first()->count());
     }
