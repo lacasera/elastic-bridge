@@ -282,7 +282,8 @@ class QueryBuilder
 
         $results = $this->setType('aggs')->makeRequest($index)['aggregations'][$type];
 
-        $type = Arr::first(explode('_', $type));
+        // Keys are "<field>_<type>", so the aggregate type is the last segment.
+        $type = Arr::last(explode('_', $type));
 
         if (! in_array($type, $complexAggregates)) {
             return $results['value'];

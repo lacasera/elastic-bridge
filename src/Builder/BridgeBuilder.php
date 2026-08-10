@@ -628,7 +628,7 @@ class BridgeBuilder implements BridgeBuilderInterface
 
         $results = $this->get();
 
-        $marco = Str::camel(sprintf('%s_%s', $type, $field));
+        $marco = Str::camel(sprintf('%s_%s', $field, $type));
 
         return $results->$marco();
     }

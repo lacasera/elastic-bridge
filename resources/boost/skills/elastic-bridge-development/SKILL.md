@@ -125,6 +125,28 @@ Full Eloquent cast catalog is supported (primitives, dates, `decimal:n`, enums, 
 collections, `encrypted*`, `hashed`, `As*` casts, custom `CastsAttributes`). Custom casts must
 use an **untyped `$model`** parameter — a bridge is not an Eloquent model.
 
+### Nested attributes (dot notation)
+
+Documents are nested JSON. Cast, accessor, and mutator keys may use dot notation, and nested
+values are assigned/retrieved by their dotted key.
+
+```php
+protected $casts = [
+    'hotel.location.lat' => 'float',
+    'hotel.opened_at'    => 'datetime',
+];
+
+// nested accessor/mutator: method = camelCase of the underscored path
+protected function hotelLocationLat(): Attribute { /* key: hotel.location.lat */ }
+
+$product->setAttribute('hotel.location.lat', '5.6');   // cast + stored nested
+$product->getAttribute('hotel.location.lat');          // 5.6 (float)
+```
+
+`toArray()`/`toJson()` serialize nested casts and appended nested accessors in place. Reading a
+parent as an object (`$product->hotel->location->lat`) returns the raw value — use the dotted key
+for the cast value. Filters/queries accept dotted field paths directly.
+
 ## Writing documents
 
 ```php

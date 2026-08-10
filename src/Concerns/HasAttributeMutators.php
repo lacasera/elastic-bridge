@@ -67,7 +67,9 @@ trait HasAttributeMutators
      */
     protected function resolveAttributeMutator(string $key): ?Attribute
     {
-        $method = Str::camel($key);
+        // Nested keys (dot notation) map to a camelCased method of the underscored
+        // path, e.g. "hotel.location.lat" -> hotelLocationLat().
+        $method = Str::camel(str_replace('.', '_', $key));
 
         if (! method_exists($this, $method)) {
             return null;
