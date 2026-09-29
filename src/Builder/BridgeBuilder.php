@@ -14,6 +14,7 @@ use Illuminate\Support\Traits\ForwardsCalls;
 use InvalidArgumentException;
 use Lacasera\ElasticBridge\Concerns\HasAggregates;
 use Lacasera\ElasticBridge\Concerns\SetsTerm;
+use Lacasera\ElasticBridge\Connection\MeilisearchConnection;
 use Lacasera\ElasticBridge\DTO\BulkResult;
 use Lacasera\ElasticBridge\ElasticBridge;
 use Lacasera\ElasticBridge\Enums\OrderOperator;
@@ -103,6 +104,13 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function all(int $perPage = QueryBuilder::PAGINATION_SIZE, array $columns = ['*']): mixed
     {
+        if ($this->query->getConnection() instanceof MeilisearchConnection) {
+            return $this->asBoolean()
+                ->matchAll()
+                ->simplePaginate($perPage)
+                ->get($columns);
+        }
+
         return $this->asBoolean()
             ->matchAll()
             ->cursorPaginate($perPage)
@@ -388,6 +396,10 @@ class BridgeBuilder implements BridgeBuilderInterface
      */
     public function cursorPaginate(int $size = QueryBuilder::PAGINATION_SIZE, array $sort = []): self
     {
+        if ($this->query->getConnection() instanceof MeilisearchConnection) {
+            throw new InvalidQuery('Meilisearch does not support cursorPaginate(); use simplePaginate() instead.');
+        }
+
         $paginate['size'] = $size;
 
         if ($sort !== []) {

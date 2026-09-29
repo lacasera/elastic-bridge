@@ -1,6 +1,6 @@
 ## ElasticBridge
 
-ElasticBridge gives you an Eloquent-style query builder for **Elasticsearch and OpenSearch**.
+ElasticBridge gives you an Eloquent-style query builder for **Elasticsearch, OpenSearch, and Meilisearch**.
 You define a "bridge" class per index and query it like a model. Full docs:
 https://elasticbridge.dev (LLM-friendly: https://elasticbridge.dev/llms.txt).
 
@@ -15,7 +15,7 @@ https://elasticbridge.dev (LLM-friendly: https://elasticbridge.dev/llms.txt).
 - You must set a term-level context (e.g. `asBoolean()`, `asRaw()`) before building a query,
   or a `MissingTermLevelQuery` exception is thrown.
 - Configuration lives in `config/elasticbridge.php`; env vars use the `SEARCH_*` prefix and a
-  `SEARCH_DRIVER` of `elasticsearch` (default) or `opensearch`.
+  `SEARCH_DRIVER` of `elasticsearch` (default), `opensearch`, or `meilisearch`.
 
 ### Querying
 
@@ -113,3 +113,8 @@ $query = HotelRoom::asBoolean()->matchAll()->toQuery();
 For anything deeper (multi-index `from()`/`into()`, drivers/auth, geo filters, accessors &
 mutators, custom casts), use the `elastic-bridge-development` skill or consult
 https://elasticbridge.dev/llms-full.txt.
+
+For Meilisearch, set `MEILISEARCH_HOST`, `MEILISEARCH_KEY`, and a document `id` (or configure
+`MEILISEARCH_PRIMARY_KEY`). Set filterable/sortable attributes in the Meilisearch index. Use
+`simplePaginate()`; Elasticsearch cursor pagination, aggregations, scripts, and multi-index
+reads are not supported by this driver.

@@ -9,15 +9,15 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/lacasera/elastic-bridge.svg?style=flat-square)](https://packagist.org/packages/lacasera/elastic-bridge)
 [![Total Downloads](https://img.shields.io/packagist/dt/lacasera/elastic-bridge.svg?style=flat-square)](https://packagist.org/packages/lacasera/elastic-bridge)
 
-ElasticBridge allows you to write `Fluent`, `Eloquent` like queries against **Elasticsearch and OpenSearch** in your Laravel application.
+ElasticBridge allows you to write `Fluent`, `Eloquent` like queries against **Elasticsearch, OpenSearch, and Meilisearch** in your Laravel application.
 
-With ElasticBridge, you can interact with your search indexes as easily as you would with traditional Eloquent models — full-text search, filters, aggregations, attribute casting, bulk indexing, and multi-index queries — bringing the power of Elasticsearch/OpenSearch into the Laravel ecosystem with no effort.
+With ElasticBridge, you can interact with your search indexes as easily as you would with traditional Eloquent models — full-text search, filters, attribute casting, and bulk indexing. Elasticsearch and OpenSearch also support aggregations and multi-index queries.
 
 ## Requirements
 
 - PHP 8.2 or 8.3
 - Laravel 10.x, 11.x, or 12.x
-- Elasticsearch 8.x **or** OpenSearch 2.x
+- Elasticsearch 8.x, OpenSearch 2.x, **or** Meilisearch 1.14+
 
 ## Compatibility Matrix
 
@@ -34,6 +34,45 @@ Install the package via Composer:
 ```bash
 composer require lacasera/elastic-bridge
 ```
+
+## Meilisearch
+
+Set the driver and endpoint in your Laravel `.env`:
+
+```dotenv
+SEARCH_DRIVER=meilisearch
+MEILISEARCH_HOST=http://127.0.0.1:7700
+MEILISEARCH_KEY=your-api-key
+MEILISEARCH_PRIMARY_KEY=id
+```
+
+Every document needs a primary key. The bridge's `id` input is stored in the configured Meilisearch primary-key field, including during `bulk()` and `upsert()`. Writes wait for Meilisearch's indexing task to finish; the default timeout is 30 seconds (`MEILISEARCH_TASK_TIMEOUT_MS`).
+
+Configure fields used in filters and sorting in the Meilisearch index settings before querying:
+
+```php
+$connection = app(\Lacasera\ElasticBridge\Connection\ConnectionInterface::class);
+assert($connection instanceof \Lacasera\ElasticBridge\Connection\MeilisearchConnection);
+$index = $connection->getClient()->index('hotel_rooms');
+
+$filterTask = $index->updateFilterableAttributes(['currency', 'price']);
+$sortTask = $index->updateSortableAttributes(['price']);
+$index->waitForTask($filterTask['taskUid']);
+$index->waitForTask($sortTask['taskUid']);
+```
+
+```php
+HotelRoom::create(['id' => 1, 'name' => 'Harbor', 'currency' => 'USD', 'price' => 120]);
+
+$rooms = HotelRoom::asBoolean()
+    ->mustMatch('name', 'harbor')
+    ->filterByTerm('currency', 'USD')
+    ->orderBy('price')
+    ->simplePaginate(15, 0)
+    ->get();
+```
+
+The Meilisearch driver supports a single text clause with term/range/exists filters, sorting, field selection, `find()`, `count()`, `create()`, `save()`, `bulk()`, and `upsert()`. `all()` uses offset pagination. `cursorPaginate()`, aggregations, Elasticsearch scripts (`increment()`/`decrement()`), geo DSL, fuzzy/regex/prefix DSL, and wildcard or multi-index reads are unavailable and raise an exception. Filtered `count()` uses Meilisearch's `totalHits`, which is subject to the index's `pagination.maxTotalHits` setting.
 
 ## Overview
 ```bash

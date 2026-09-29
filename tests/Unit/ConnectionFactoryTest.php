@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Lacasera\ElasticBridge\Connection\ConnectionFactory;
 use Lacasera\ElasticBridge\Connection\ConnectionInterface;
 use Lacasera\ElasticBridge\Connection\ElasticConnection;
+use Lacasera\ElasticBridge\Connection\MeilisearchConnection;
 use Lacasera\ElasticBridge\Connection\OpenSearchConnection;
 use Lacasera\ElasticBridge\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -30,6 +31,12 @@ class ConnectionFactoryTest extends TestCase
     public function it_resolves_the_opensearch_driver(): void
     {
         $this->assertInstanceOf(OpenSearchConnection::class, ConnectionFactory::make(['driver' => 'opensearch']));
+    }
+
+    #[Test]
+    public function it_resolves_the_meilisearch_driver(): void
+    {
+        $this->assertInstanceOf(MeilisearchConnection::class, ConnectionFactory::make(['driver' => 'meilisearch']));
     }
 
     #[Test]
