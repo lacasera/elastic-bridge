@@ -1,0 +1,48 @@
+name: Security Audit
+
+on:
+  push:
+    branches:
+      - main
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+
+# Install the newest release even if it has an advisory, so the audit step reports
+# it instead of the resolver quietly picking an older version.
+env:
+  COMPOSER_NO_SECURITY_BLOCKING: '1'
+
+jobs:
+  audit:
+    name: composer audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      # Laravel 12 is the only supported line without open advisories. Every 10.x
+      # and 11.x release has some, so auditing those would always fail.
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:12.*" "nesbot/carbon:^3.8.4" --no-interaction --no-update
+          composer require --dev "orchestra/testbench:10.*" --no-interaction --no-update
+          composer remove --dev rector/rector --no-interaction --no-update
+          composer require --dev \
+            larastan/larastan:^3.0 \
+            phpstan/phpstan:^2.1 \
+            phpstan/phpstan-deprecation-rules:^2.0 \
+            phpstan/phpstan-phpunit:^2.0 \
+            phpunit/phpunit:^11.5.3 \
+            --no-interaction --no-update
+          composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: Audit dependencies
+        run: composer audit

@@ -10,6 +10,11 @@ on:
       - 'composer.json'
       - 'composer.lock'
 
+# A plain install resolves to Laravel 11, and Composer refuses to install it by
+# default because every release has a published security advisory.
+env:
+  COMPOSER_NO_SECURITY_BLOCKING: '1'
+
 jobs:
   rector:
     if: github.event.pull_request.draft == false
