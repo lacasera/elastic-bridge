@@ -1,14 +1,13 @@
 <?php
 
 /**
- * ElasticBridge works with both Elasticsearch and OpenSearch. The connection
- * settings below are backend-agnostic and shared by both drivers.
+ * ElasticBridge works with Elasticsearch, OpenSearch, and Meilisearch.
  */
 return [
 
     /**
      * Search backend driver
-     * Supported: elasticsearch, opensearch
+     * Supported: elasticsearch, opensearch, meilisearch
      */
     'driver' => env('SEARCH_DRIVER', 'elasticsearch'),
 
@@ -65,6 +64,18 @@ return [
     'sig_v4' => [
         'region' => env('SEARCH_AWS_REGION'),
         'service' => env('SEARCH_AWS_SERVICE', 'es'), // 'es' (managed) | 'aoss' (serverless)
+    ],
+
+    /**
+     * Meilisearch uses a single HTTP endpoint and a document primary key.
+     * Writes are awaited so create(), save(), and BulkResult reflect completed tasks.
+     */
+    'meilisearch' => [
+        'host' => env('MEILISEARCH_HOST', 'http://127.0.0.1:7700'),
+        'key' => env('MEILISEARCH_KEY'),
+        'primary_key' => env('MEILISEARCH_PRIMARY_KEY', 'id'),
+        'task_timeout_ms' => env('MEILISEARCH_TASK_TIMEOUT_MS', 30000),
+        'task_poll_interval_ms' => env('MEILISEARCH_TASK_POLL_INTERVAL_MS', 50),
     ],
 
     /**

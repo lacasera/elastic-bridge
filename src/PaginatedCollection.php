@@ -6,8 +6,21 @@ namespace Lacasera\ElasticBridge;
 
 class PaginatedCollection extends Collection
 {
+    private ?array $paginationLinks = null;
+
+    public function setPaginationLinks(array $links): static
+    {
+        $this->paginationLinks = $links;
+
+        return $this;
+    }
+
     public function links(): array
     {
+        if ($this->paginationLinks !== null) {
+            return $this->paginationLinks;
+        }
+
         return [
             'previous' => $this->previousSort(),
 
@@ -22,6 +35,10 @@ class PaginatedCollection extends Collection
      */
     public function total()
     {
+        if ($this->paginationLinks !== null) {
+            return $this->paginationLinks['total'];
+        }
+
         if ($this->isEmpty()) {
             return 0;
         }

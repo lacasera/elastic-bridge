@@ -18,8 +18,9 @@ class ConnectionFactory
         return match ($driver) {
             'elasticsearch' => new ElasticConnection,
             'opensearch' => new OpenSearchConnection,
+            'meilisearch' => new MeilisearchConnection,
             default => throw new InvalidArgumentException(
-                sprintf('Unsupported elastic-bridge driver [%s]. Supported: elasticsearch, opensearch.', $driver)
+                sprintf('Unsupported elastic-bridge driver [%s]. Supported: elasticsearch, opensearch, meilisearch.', $driver)
             ),
         };
     }

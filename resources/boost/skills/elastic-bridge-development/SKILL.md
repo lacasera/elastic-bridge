@@ -1,11 +1,11 @@
 ---
 name: elastic-bridge-development
-description: Build and work with lacasera/elastic-bridge — an Eloquent-style query builder for Elasticsearch and OpenSearch in Laravel. Use when creating "bridge" classes, writing search/aggregation queries, casting attributes, bulk indexing/upserting, targeting multiple indexes, configuring the Elasticsearch/OpenSearch driver, or testing search code.
+description: Build and work with lacasera/elastic-bridge — an Eloquent-style query builder for Elasticsearch, OpenSearch, and Meilisearch in Laravel. Use when creating "bridge" classes, writing search/aggregation queries, casting attributes, bulk indexing/upserting, targeting multiple indexes, configuring search drivers, or testing search code.
 ---
 
 # ElasticBridge Development
 
-ElasticBridge lets you query Elasticsearch and OpenSearch with an Eloquent-like API. You define
+ElasticBridge lets you query Elasticsearch, OpenSearch, and Meilisearch with an Eloquent-like API. You define
 a bridge class per index and query it fluently. Docs: https://elasticbridge.dev
 (LLM: https://elasticbridge.dev/llms-full.txt).
 
@@ -188,7 +188,13 @@ to the concrete `_index` it came from.
 
 `config/elasticbridge.php` (env `SEARCH_*`):
 
-- `driver`: `elasticsearch` (default) or `opensearch` (`SEARCH_DRIVER`).
+- `driver`: `elasticsearch` (default), `opensearch`, or `meilisearch` (`SEARCH_DRIVER`).
+- For Meilisearch, use `MEILISEARCH_HOST`, `MEILISEARCH_KEY`, and
+  optionally `MEILISEARCH_PRIMARY_KEY` (default `id`). All writes need an ID and wait for the
+  indexing task. Set filterable and sortable fields in the Meilisearch index settings.
+- Meilisearch supports a single text clause with term/range/exists filters, `find()`, offset
+  pagination via `simplePaginate()`, counting, and document writes. Aggregations, scripts,
+  cursor pagination, and wildcard/multi-index reads raise an exception for this driver.
 - `host`: comma-separated for a cluster (`SEARCH_HOST`). Elasticsearch load-balances across all
   hosts; OpenSearch uses the first (front a cluster with an endpoint/LB).
 - `auth_method`: `basic-auth`, `api-key`, or `sigv4` (OpenSearch AWS; needs `aws/aws-sdk-php`

@@ -158,6 +158,10 @@ abstract class ElasticBridge implements Arrayable, Jsonable, JsonSerializable
             $collection->setAggregations($this->resolveAggregations($items['aggregations']));
         }
 
+        if ($collection instanceof PaginatedCollection && isset($items['pagination'])) {
+            $collection->setPaginationLinks($items['pagination']);
+        }
+
         static::$collectionClass = $originalCollectionClass;
 
         return $collection;

@@ -4,6 +4,9 @@ All notable changes to `elastic-bridge` will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Meilisearch 1.14+ driver (`SEARCH_DRIVER=meilisearch`) with search/filter translation, offset pagination, document reads/writes, bulk indexing, and task completion checks. Configure it with `MEILISEARCH_HOST`, `MEILISEARCH_KEY`, and `MEILISEARCH_PRIMARY_KEY`.
+
 ## [2.0.0] - 2026-08-10
 
 ElasticBridge 2.0 adds **OpenSearch** support alongside Elasticsearch, an attribute
